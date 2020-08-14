@@ -1,0 +1,75 @@
+<!doctype html>
+<!--
+https://github.com/moos/wordpos-web
+Copyright (c) 2012-2020 mooster@42at.com
+(The MIT License)
+-->
+<html>
+<head>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' https: http: 'unsafe-inline' 'unsafe-eval'">
+  <link rel="icon" href="data:," />
+  <title>Wordpos in the browser -- self-hosted</title>
+
+  <script class="cdn" src="https://cdn.jsdelivr.net/npm/wordpos-web@1.0.2/dist/wordpos.min.js"></script>
+
+  <!-- <script class="self" src="../../dist/wordpos.min.js"></script> -->
+  <script class="init">
+    let wordpos = window.wordpos = new WordPOS({
+      preload: true,
+      includeData: true,
+      // dictPath: '../dict',  // relative to dist/
+      dictPath: 'https://cdn.jsdelivr.net/npm/wordpos-web@1.0.2/dict',
+      profile: true,
+      debug: true,
+      // stopwords: false
+    });
+  </script>
+
+  <script src="./index.js" name="main"></script>
+  <style>
+    @font-face {
+      font-family: "Bookerly";
+      src: url("./static/Bookerly-Regular.ttf");
+    }
+
+    body {
+        font-family: "Bookerly";
+        margin: 0 auto;
+        width: 900px;
+        margin-top: 100px;
+    }
+
+    .dictionary {
+        margin-top: 200px;
+        border-top: 1px solid #ececec;
+        padding-top: 30px;
+
+    }
+
+    .text span {
+        cursor: pointer;
+        line-height: 18px;
+        display: inline-block;
+        font-size: 16px;
+    }
+    .text span:hover {
+        background-color: #2bb;
+
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="text">
+    <span t="j">Some</span> <span t="j">custom</span> <span t="n">words</span> <span t="x">that</span> <span t="n">you</span> <span t="v">can</span> <span t="v">use</span> <span t="n">for</span> <span t="n">reading</span>.
+  </div>
+
+  <div class="dictionary">
+  </div>
+
+  <button class="translate"> Translate </button>
+  <button class="remember"> Remember </button>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "translation_app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "parcel build index.html",
+    "start": "parcel -p 8888 watch index.html"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  },
+  "dependencies": {
+    "google-translate-api-browser": "^1.1.71"
+  }
+}
