@@ -1,10 +1,59 @@
-import { book } from "./book"
+import lemmatize from "wink-lemmatizer"
 import { setCORS } from "google-translate-api-browser"
+import { book } from "./book"
 
 // setting up cors-anywhere server address
 const translate = setCORS("http://cors-anywhere.herokuapp.com/")
 
 let curSentence = null
+
+function partOfSpeech(attr) {
+  const parts = {
+    n: 'noun',
+    j: 'adjective',
+    d: 'adverb',
+    v: 'verb',
+  }
+
+  return parts[attr]
+}
+
+function lemma(attr, word) {
+  const lemmFunc = partOfSpeech(attr)
+  // dont have adverb lemmatization(maybe not even need it)
+  return lemmatize[lemmFunc] ? lemmatize[lemmFunc](word) : word
+}
+
+function lookup(attr, word) {
+  const funcs = {
+    x: 'lookup',
+    n: 'lookupNoun',
+    j: 'lookupAdjective',
+    d: 'lookupAdverb',
+    v: 'lookupVerb',
+  }
+  const lookupFunc = funcs[attr]
+
+  return wordpos[lookupFunc](word)
+    .then(res => {
+      if (res.length === 0) {
+        const lemmatized = lemma(attr, word)
+
+        return Promise.all([wordpos.lookup(word), wordpos[lookupFunc](lemmatized)])
+          .then((res) => {
+            let [resAll, resLemm] = res
+            const delimiterEntity = {
+              def: `<b>All results:</b>`,
+              exp: [],
+              synonyms: []
+            }
+            if (resAll.length > 0) resAll = [delimiterEntity, ...resAll]
+            return [...resLemm, ...resAll]
+          })
+      }
+      return res
+    })
+}
 
 function main() {
   // insert book
@@ -16,14 +65,6 @@ function main() {
   let dict = document.querySelector('.dictionary')
   let rememberBtn = document.querySelector('button.remember')
 
-  let funcs = {
-    x: 'lookup',
-    n: 'lookupNoun',
-    j: 'lookupAdjective',
-    d: 'lookupAdverb',
-    v: 'lookupVerb',
-  }
-
   let myFunction = function() {
     curSentence = this.closest('.sentence')
 
@@ -31,7 +72,7 @@ function main() {
     rememberBtn.setAttribute('data-word', word)
 
     let attribute = this.getAttribute("t")
-    wordpos[funcs[attribute]](word)
+    lookup(attribute, word)
       .then(res => {
         console.log('HUI', res)
         let defs = res.map(r => {
@@ -42,7 +83,10 @@ function main() {
           if (synonims.length > 0) synonims = `(${synonims})`
           return `<li>${synonims} <span>${r.def}</span> ${examples} </li>`
         }).join('')
-        dict.innerHTML = `<b>${word}</b> <ol>${defs}</ol>`
+
+        const lemmaWord = lemma(attribute, word) !== word ? `, ${lemma(attribute, word)}` : ''
+        const header  = `<b>${word} (${partOfSpeech(attribute, word)}${lemmaWord})</b>`
+        dict.innerHTML = `${header} <ol>${defs}</ol>`
       })
   }
 

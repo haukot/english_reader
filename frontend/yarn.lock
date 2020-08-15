@@ -5126,6 +5126,24 @@ which@^1.2.9:
   dependencies:
     isexe "^2.0.0"
 
+wink-lemmatizer@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/wink-lemmatizer/-/wink-lemmatizer-3.0.1.tgz#d0d65c87d1dbc322af7599489bb23c0490f9bcf0"
+  integrity sha512-i3UFptXN8zqRaum4CWBGAXkpK6gtPU9a0/M5U9t2epBd68sr9WX7mFWKfMuSAJoc9w0HXHZOXsuGvTRxjCSWPQ==
+  dependencies:
+    wink-lexicon "^2.0.1"
+    wink-porter2-stemmer "^2.0.0"
+
+wink-lexicon@^2.0.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/wink-lexicon/-/wink-lexicon-2.1.1.tgz#2966ceceaabb343cae7803441384ad28ddfe9a72"
+  integrity sha512-By1dTZdq0dhHNJlFHjwvOV9tWeijS7T119gt7/JA59W6uVdRdvZ7Yz10TrIbqt70A3ew1ywDvhYwCYc4VuJ7XA==
+
+wink-porter2-stemmer@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/wink-porter2-stemmer/-/wink-porter2-stemmer-2.0.1.tgz#f7680e584e2b9b4c44766642325671662e98f44a"
+  integrity sha512-0g+RkkqhRXFmSpJQStVXW5N/WsshWpJXsoDRW7DwVkGI2uDT6IBCoq3xdH5p6IHLaC6ygk7RWUsUx4alKxoagQ==
+
 word-wrap@~1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.3.tgz#610636f6b1f703891bd34771ccb17fb93b47079c"
