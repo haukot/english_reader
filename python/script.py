@@ -10,6 +10,10 @@ His eyes caught his own reflection in a mirror hanging askew from bubbled marble
 “Ilyena, my love! Come to me, my wife. You must see this.”
 """
 
+# book = """
+# The one. Something is none
+# """
+
 nlp = spacy.load("en_core_web_sm")
 doc = nlp(book)
 
@@ -22,16 +26,41 @@ tags = {
 
 offset = 0
 
-for token in doc:
-    tag = tags.get(token.pos_, 'x')
-    idx = offset + token.idx
-    end_idx = offset + token.idx + len(token.text)
-    # print(token.text, token.pos_, token.idx, len(token.text), tags.get(token.pos_, 'x'))
-    if (tag != 'x'):
-        book = book[:idx] + '<span t="' + tag + '">' + book[idx:end_idx] + '</span>' + book[end_idx:]
-        offset = offset + 19
+# for token in doc:
+#     tag = tags.get(token.pos_, 'x')
+#     idx = offset + token.idx
+#     end_idx = offset + token.idx + len(token.text)
+#     # print(token.text, token.pos_, token.idx, len(token.text), tags.get(token.pos_, 'x'))
+#     if (tag != 'x'):
+#         book = book[:idx] + '<span t="' + tag + '">' + book[idx:end_idx] + '</span>' + book[end_idx:]
+#         offset = offset + 19
+
+# for sent in doc.sents:
+#     print(sent.start_char, ',', sent.end_char)
+
 
 for sent in doc.sents:
-    print(sent.start_char, ',', sent.end_char)
+    sent_idx = offset + sent.start_char
+    sent_end_idx = offset + sent.end_char
+
+    text = book[sent_idx:sent_end_idx]
+    sent_offset = -sent.start_char
+
+    for token in sent:
+        tag = tags.get(token.pos_, 'x')
+        idx = sent_offset + token.idx
+        end_idx = sent_offset + token.idx + len(token.text)
+        # print(token.text, token.idx, idx, end_idx, offset, sent_idx, text)
+        if (tag != 'x'):
+            text = text[:idx] + '<span t="' + tag + '">' + text[idx:end_idx] + '</span>' + text[end_idx:]
+
+            sent_offset = sent_offset + 19 # added span tag length
+            offset = offset + 19
+
+    book = book[:sent_idx] + '<span class="sentence">' + text + '</span>' + book[sent_end_idx:]
+    offset = offset + 30 # added span tag length
+
+    # print(sent.start_char, ',', sent.end_char)
+
 
 print(book)

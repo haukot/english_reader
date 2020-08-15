@@ -40,21 +40,27 @@ Copyright (c) 2012-2020 mooster@42at.com
     }
 
     .dictionary {
-        margin-top: 200px;
+        margin-top: 20px;
         border-top: 1px solid #ececec;
         padding-top: 30px;
 
     }
 
-    .text span {
+    .text {
+        white-space: pre-line;
+    }
+
+    .text .sentence:hover {
+        background-color: #ececec;
+    }
+    .text span:not(.sentence) {
         cursor: pointer;
         line-height: 18px;
         display: inline-block;
         font-size: 16px;
     }
-    .text span:hover {
+    .text span:not(.sentence):hover {
         background-color: #2bb;
-
     }
   </style>
 </head>
@@ -62,14 +68,15 @@ Copyright (c) 2012-2020 mooster@42at.com
 <body>
 
   <div class="text">
-    <span t="j">Some</span> <span t="j">custom</span> <span t="n">words</span> <span t="x">that</span> <span t="n">you</span> <span t="v">can</span> <span t="v">use</span> <span t="n">for</span> <span t="n">reading</span>.
-  </div>
-
-  <div class="dictionary">
   </div>
 
   <button class="translate"> Translate </button>
   <button class="remember"> Remember </button>
+
+  <div class="translation">
+  </div>
+  <div class="dictionary">
+  </div>
 
 </body>
 </html>

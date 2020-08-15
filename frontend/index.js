@@ -1,10 +1,18 @@
-import { setCORS } from "google-translate-api-browser";
-// setting up cors-anywhere server address
-const translate = setCORS("http://cors-anywhere.herokuapp.com/");
+import { book } from "./book"
+import { setCORS } from "google-translate-api-browser"
 
+// setting up cors-anywhere server address
+const translate = setCORS("http://cors-anywhere.herokuapp.com/")
+
+let curSentence = null
 
 function main() {
-  let elements = document.querySelectorAll('.text span')
+  // insert book
+  let text = document.querySelector('.text')
+  text.innerHTML = book
+
+  // process spans
+  let elements = document.querySelectorAll('.text span:not(.sentence)')
   let dict = document.querySelector('.dictionary')
   let rememberBtn = document.querySelector('button.remember')
 
@@ -17,6 +25,8 @@ function main() {
   }
 
   let myFunction = function() {
+    curSentence = this.closest('.sentence')
+
     let word = this.innerHTML
     rememberBtn.setAttribute('data-word', word)
 
@@ -43,17 +53,16 @@ function main() {
 
 function translation() {
   let btn = document.querySelector('button.translate')
-  let text = document.querySelector('.text')
-  let dict = document.querySelector('.dictionary')
+  let el = document.querySelector('.translation')
 
   let myFunction = function() {
-    translate(text.innerText, { from: "en", to: "ru" })
+    translate(curSentence.innerText, { from: "en", to: "ru" })
       .then(res => {
-        dict.innerHTML = res.text
+        el.innerHTML = res.text
       })
       .catch(err => {
         console.error(err)
-        dict.innerHTML = err
+        el.innerHTML = err
       })
   }
   btn.addEventListener('click', myFunction, false)
