@@ -36,46 +36,101 @@ Copyright (c) 2012-2020 mooster@42at.com
         font-family: "Bookerly";
         margin: 0 auto;
         width: 900px;
-        margin-top: 100px;
+        margin-top: 50px;
     }
 
+    .dictionary-container {
+        border: 1px solid #ececec;
+        position: fixed;
+        left: 29%;
+        padding: 20px;
+        background: white;
+        width: 40%;
+        max-height: 40vh;
+        overflow-y: scroll;
+        box-shadow: 0 0 7px #d2ae79;
+    }
+    .dictionary-container.-top {
+        top: 3vh;
+    }
+    .dictionary-container.-bottom {
+        top: 50vh;
+    }
     .dictionary {
-        margin-top: 20px;
-        border-top: 1px solid #ececec;
-        padding-top: 30px;
-
+    }
+    .dictionary-container .buttons {
+        float: right;
+    }
+    .dictionary-container .buttons button {
+        transition: background-color 0.3s ease;
+        font-family: 'Bookerly';
+        height: 28px;
+    }
+    .dictionary-container .buttons button.-success {
+        background-color: #2b2;
+    }
+    .dictionary-container .buttons button.-process {
+        background-color: #ff8800;
+    }
+    .translation {
+        margin-bottom: 10px;
     }
 
     .text {
         white-space: pre-line;
+        font-size: 18px;
     }
 
-    .text .sentence:hover {
+    .pagination {
+        margin: 0 auto;
+        margin-top: 20px;
+        margin-bottom: 50px;
+        width: 50%;
+        display: flex;
+        justify-content: center;
+    }
+    .pagination .page-btn {
+        padding: 6px;
+        text-decoration: none;
+    }
+    .pagination .page-btn.active {
+        border: 1px solid #ff9900;
+        background-color: #ffedba;
+    }
+
+    .text .sentence:hover, .text .sentence.active {
         background-color: #ececec;
     }
     .text span:not(.sentence) {
         cursor: pointer;
-        line-height: 18px;
         display: inline-block;
-        font-size: 16px;
     }
-    .text span:not(.sentence):hover {
+    .text span.remembered {
+        background-color: #ffedba;
+    }
+    .text span:not(.sentence):hover, .text span.active {
         background-color: #2bb;
+    }
+    .hidden {
+        display: none!important;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="text">
-  </div>
+  <div class="text"></div>
 
-  <button class="translate"> Translate </button>
-  <button class="remember"> Remember </button>
+  <div class="pagination"></div>
 
-  <div class="translation">
-  </div>
-  <div class="dictionary">
+
+  <div class="dictionary-container hidden">
+    <div class="buttons">
+      <button class="translate"> Translate </button>
+      <button class="remember"> Remember </button>
+    </div>
+    <div class="translation"></div>
+    <div class="dictionary"></div>
   </div>
 
 </body>
