@@ -192,38 +192,9 @@ function sound() {
   let btn = document.querySelector('button.sound')
 
   let myFunction = function() {
-    // copied html from google dictionary extension request
     const word = curWordEl.innerHTML.toLowerCase()
-    const baseUrl = 'https://ssl.gstatic.com/dictionary/static/sounds/20180430/'
-    // can change accent to britich by changing us to gb
-    var player = new Audio(`${baseUrl}${word}--_us_1.mp3`)
-
-    player.play().catch(err => {
-      const attribute = curWordEl.getAttribute("t")
-      const lemmatized = lemma(attribute, word)
-      if (lemmatized !== word) {
-        player = new Audio(`${baseUrl}/${lemmatized}--_us_1.mp3`)
-      }
-      player.play().catch(() => {
-        player = new Audio(`${baseUrl}/${lemmatized}--_us_1_rr.mp3`) // e.g. 'always'
-        player.play().catch(() => {
-          player = new Audio(`${baseUrl}/${lemmatized}--_us_2.mp3`)
-          player.play().catch(() => {
-            player = new Audio(`${baseUrl}/${lemmatized}--_us_3.mp3`)
-            player.play().catch(() => {
-              player = new Audio(`${baseUrl}/${lemmatized}--_us_4.mp3`)
-              player.play().catch(() => {
-                player = new Audio(`${baseUrl}/${lemmatized}--_us_5.mp3`)
-                player.play().catch(() => {
-                  player = new Audio(`${baseUrl}/${lemmatized}--_us_1_rr.mp3`)
-                  player.play().catch(handleError)
-                })
-              })
-            })
-          })
-        })
-      })
-    }).catch(handleError)
+    const player = new Audio(`https://voice.reverso.net/RestPronunciation.svc/v1/output=json/GetVoiceStream/voiceName=Heather22k?mp3BitRate=64&inputText=${btoa(word)}`)
+    player.play()
   }
   btn.addEventListener('click', myFunction, false)
 }
