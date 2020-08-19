@@ -71,16 +71,18 @@ Copyright (c) 2012-2020 mooster@42at.com
         float: right;
     }
     .dictionary-container .buttons button {
-        transition: background-color 0.3s ease;
         font-family: 'Bookerly';
         height: 1.5rem;
         font-size: 0.9rem;
     }
-    .dictionary-container .buttons button.-success {
-        background-color: #2b2;
+    button {
+        transition: background-color 0.3s ease;
     }
-    .dictionary-container .buttons button.-process {
-        background-color: #ff8800;
+    button.-success {
+        background-color: #2b2!important;
+    }
+    button.-process {
+        background-color: #ff8800!important;
     }
     .dictionary-container .buttons .sound {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAcUlEQVQ4y2P4//8/AyUYQhAH3gNxA7IAIQPmo/H3g/QA8XkgFiBkwHyoYnRQABVfj88AmGZcTuuHyjlgMwBZM7IE3NlQGhQe65EN+I8Dw8MLGgYoFpFqADK/YUAMwOsFigORatFIlYRElaRMWmaiBAMAp0n+3U0kqkAAAAAASUVORK5CYII=);
@@ -152,10 +154,6 @@ Copyright (c) 2012-2020 mooster@42at.com
     </div>
     <h3> Books: </h3>
     <div class="books">
-      <div class="book">
-        1. <a class="book-open" href="#book-id&page=5"> Book name </a>
-        <button class="book-delete"> 🗑 </button>
-      </div>
     </div>
   </div>
 

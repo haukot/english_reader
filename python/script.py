@@ -78,6 +78,6 @@ def process_book(book):
     if (pages[-1][1] < end_book_idx):
         pages.append([pages[-1][0] + 1, end_book_idx])
 
-    res = json.dumps({'pages': pages, 'book': res_book})
+    res = json.dumps({'pages': pages, 'text': res_book})
 
     return res
