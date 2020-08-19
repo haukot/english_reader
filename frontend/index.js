@@ -156,7 +156,7 @@ function renderText() {
   })
 }
 
-function translation() {
+function renderTranslation() {
   let btn = document.querySelector('button.translate')
   let el = document.querySelector('.translation')
 
@@ -173,7 +173,7 @@ function translation() {
   btn.addEventListener('click', myFunction, false)
 }
 
-function remember() {
+function renderRemember() {
   let btn = document.querySelector('button.remember')
   let dict = document.querySelector('.dictionary')
 
@@ -188,13 +188,30 @@ function remember() {
   btn.addEventListener('click', myFunction, false)
 }
 
-function sound() {
+function renderSound() {
   let btn = document.querySelector('button.sound')
 
   let myFunction = function() {
     const word = curWordEl.innerHTML.toLowerCase()
     const player = new Audio(`https://voice.reverso.net/RestPronunciation.svc/v1/output=json/GetVoiceStream/voiceName=Heather22k?mp3BitRate=64&inputText=${btoa(word)}`)
     player.play()
+  }
+  btn.addEventListener('click', myFunction, false)
+}
+
+function renderMenu() {
+  const btn = document.querySelector('.menu-button')
+  const menuCont = document.querySelector('.menu-container')
+  const bookCont = document.querySelector('.book-container')
+
+  let myFunction = function() {
+    if (menuCont.classList.contains('hidden')) {
+      show(menuCont)
+      hide(bookCont)
+    } else {
+      hide(menuCont)
+      show(bookCont)
+    }
   }
   btn.addEventListener('click', myFunction, false)
 }
@@ -229,10 +246,31 @@ function renderPagination() {
   }
 }
 
+function renderUpload() {
+  const btn = document.querySelector('button.upload')
+
+  let myFunction = function() {
+    const fileInput = document.querySelector('#input-file')
+    const file = fileInput.files[0]
+    const formData = new FormData()
+    formData.append('file', file)
+
+    fetch('http://localhost:3000/process', {
+      method: 'POST',
+      body: formData
+    }).then(response => response.json())
+      .then(success => console.log('HUI', success))
+      .catch(handleError)
+  }
+  btn.addEventListener('click', myFunction, false)
+}
+
 document.addEventListener("DOMContentLoaded", function(event) {
+  renderMenu()
   renderPagination()
   renderText()
-  translation()
-  remember()
-  sound()
+  renderTranslation()
+  renderRemember()
+  renderSound()
+  renderUpload()
 })

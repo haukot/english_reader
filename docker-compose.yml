@@ -1,0 +1,27 @@
+version: '2'
+volumes:
+  python_libs:
+  node_modules:
+
+services:
+  web:
+    build:
+      context: ./python
+      dockerfile: ./Dockerfile
+    volumes:
+      - ~/.bash_history:/root/.bash_history
+      - python_libs:/root/.cache/pypoetry
+      - ./python/:/srv/python/
+    ports:
+      - 3000:3000
+
+  js:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    volumes:
+      - ~/.bash_history:/root/.bash_history
+      - ./frontend:/srv/frontend
+      - node_modules:/srv/frontend/node_modules
+    ports:
+      - 8888:8888

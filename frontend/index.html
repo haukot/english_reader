@@ -10,6 +10,8 @@ Copyright (c) 2012-2020 mooster@42at.com
   <link rel="icon" href="data:," />
   <title>Wordpos in the browser -- self-hosted</title>
 
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css" integrity="sha512-NmLkDIU1C/C88wi324HBc+S2kLhi08PN5GDeUVVVC/BVt/9Izdsc9SVeVfA1UZbY3sHUlDSyRXhCzHfr6hmPPw==" crossorigin="anonymous" /> -->
+
   <script class="cdn" src="https://cdn.jsdelivr.net/npm/wordpos-web@1.0.2/dist/wordpos.min.js"></script>
 
   <!-- <script class="self" src="../../dist/wordpos.min.js"></script> -->
@@ -36,16 +38,23 @@ Copyright (c) 2012-2020 mooster@42at.com
         font-family: "Bookerly";
         margin: 0 auto;
         width: 900px;
-        margin-top: 50px;
+        margin-top: 3rem;
+    }
+    html, body {
+        font-size: 20px;
+        line-height: 1.5rem;
+    }
+    div, li, a, ul, ol, span, button, * {
+        font-size: 1rem;
     }
 
     .dictionary-container {
         border: 1px solid #ececec;
         position: fixed;
-        left: 29%;
-        padding: 20px;
+        left: calc((100% - 48rem)/2);
+        padding: 1.5rem;
         background: white;
-        width: 40%;
+        width: 44rem;
         max-height: 40vh;
         overflow-y: scroll;
         box-shadow: 0 0 7px #d2ae79;
@@ -64,7 +73,8 @@ Copyright (c) 2012-2020 mooster@42at.com
     .dictionary-container .buttons button {
         transition: background-color 0.3s ease;
         font-family: 'Bookerly';
-        height: 28px;
+        height: 1.5rem;
+        font-size: 0.9rem;
     }
     .dictionary-container .buttons button.-success {
         background-color: #2b2;
@@ -80,17 +90,27 @@ Copyright (c) 2012-2020 mooster@42at.com
     }
 
     .translation {
-        margin-bottom: 10px;
+        margin-bottom: 0.7rem;
+    }
+
+    .menu-button {
+        float: left;
+        cursor: pointer;
+        position: absolute;
+        left: 1rem;
+        top: 1rem;
+    }
+    .menu-container .books .book-delete {
+        float: right;
     }
 
     .text {
         white-space: pre-line;
-        font-size: 18px;
     }
 
     .pagination {
         margin: 0 auto;
-        margin-top: 20px;
+        margin-top: 2rem;
         margin-bottom: 50px;
         width: 50%;
         display: flex;
@@ -110,7 +130,6 @@ Copyright (c) 2012-2020 mooster@42at.com
     }
     .text span:not(.sentence) {
         cursor: pointer;
-        display: inline-block;
     }
     .text span.remembered {
         background-color: #ffedba;
@@ -125,20 +144,36 @@ Copyright (c) 2012-2020 mooster@42at.com
 </head>
 
 <body>
-
-  <div class="text"></div>
-
-  <div class="pagination"></div>
-
-
-  <div class="dictionary-container hidden">
-    <div class="buttons">
-      <button class="translate"> Translate </button>
-      <button class="remember"> Remember </button>
-      <button class="sound"> &nbsp </button>
+  <a class="menu-button"> ☰ </a>
+  <div class="menu-container hidden">
+    <div>
+      <input id="input-file" type="file" >
+      <button class="upload"> Upload book </button>
     </div>
-    <div class="translation"></div>
-    <div class="dictionary"></div>
+    <h3> Books: </h3>
+    <div class="books">
+      <div class="book">
+        1. <a class="book-open" href="#book-id&page=5"> Book name </a>
+        <button class="book-delete"> 🗑 </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="book-container">
+    <div class="text"></div>
+
+    <div class="pagination"></div>
+
+
+    <div class="dictionary-container hidden">
+      <div class="buttons">
+        <button class="translate"> Translate </button>
+        <button class="remember"> Remember </button>
+        <button class="sound"> &nbsp </button>
+      </div>
+      <div class="translation"></div>
+      <div class="dictionary"></div>
+    </div>
   </div>
 
 </body>
