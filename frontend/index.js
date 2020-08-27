@@ -5,13 +5,12 @@ import { setCORS } from "google-translate-api-browser"
 // setting up cors-anywhere server address
 const translate = setCORS("http://cors-anywhere.herokuapp.com/")
 
-const backendHost = window.location.origin // 'http://localhost:3000'
+const backendHost = `${location.protocol}//${location.hostname}:3000` // 'http://localhost:3000'
 
 let curSentenceEl = null
 let curWordEl = null
 let state = null
 let db = null
-let currentBook = null
 const defaultBook = {
   id: 'default_book.txt.000kinda000sha000',
   pages: [[0, 612]],
@@ -19,6 +18,7 @@ const defaultBook = {
   text: "Default Book. \n <span class=\"sentence\">\u201cThe Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\u201d\n\n</span><span class=\"sentence\">\u2014</span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n\u201cA <span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.\u201d\n\n\u2014L. Sprague De Camp\n</span>",
   currentPage: 1
 }
+let currentBook = defaultBook
 const defaultState = {
   id: 1,
   words: {},
@@ -35,70 +35,92 @@ const defaultState = {
 }
 
 function handleError(err) {
-  console.error(err)
+  console.error(err, console.trace())
   alert(err)
 }
 
-function setupState() {
-  return async function() {
-    db = new Dexie("store")
-    db.version(4).stores({ state: "id", books: "id" })
+async function setupState() {
+  db = new Dexie("store")
+  db.version(4).stores({ state: "id", books: "id" })
 
-    const stateRes = await db.state.where({ id: 1 }).catch(handleError)
-    updateState(stateRes[0] || defaultState)
-  }
+  const stateRes = await db.state.where({ id: 1 }).toArray().catch(handleError)
+  await updateState(stateRes[0] || defaultState)
 }
 
 function updateState(newState) {
   state = newState
 
-  db.state.put(1, state).catch(handleError)
+  return (async function() {
+    try {
+      await db.state.put(state)
 
-  if (state.currentBookId !== currentBook.id) {
-    const bookRes = await db.books.where({ id: state.currentBookId }).catch(handleError)
-    if (bookRes[0]) {
-      currentBook = bookRes[0]
-    } else {
-      handleError(`Cant load book ${state.currentBookId}, res is ${bookRes}; set to default book`)
-      currentBook = defaultBook
+      if (state.currentBookId !== currentBook.id) {
+        const bookRes = await db.books.where({ id: state.currentBookId }).toArray()
+        if (bookRes[0]) {
+          currentBook = bookRes[0]
+        } else {
+          handleError(`Cant load book ${state.currentBookId}, res is ${bookRes}; set to default book`)
+          currentBook = defaultBook
+        }
+      }
+    } catch(e) {
+      handleError(e)
     }
+  })()
+}
+
+async function addBook(book) {
+  try {
+    state.books.push({
+      id: book.id,
+      name: book.name,
+      pages: book.pages,
+      currentPage: 1
+    })
+    // insert in books with book.text
+    await db.books.put(book)
+    await updateState(state)
+  } catch(e) {
+    handleError(e)
   }
 }
 
-function addBook(book) {
-  state.books.push({
-    id: book.id,
-    name: book.name,
-    pages: book.pages,
-    currentPage: 1
-  })
-  // insert in books with book.text
-  db.books.put(bookId, book).catch(handleError)
-  updateState(state)
+async function updateBook(bookId, data) {
+  try {
+    let book = state.books.find(b => b.id === bookId)
+    if (!book) {
+      handleError(`Book ${bookId} not found!`)
+    }
+    Object.assign(book, data)
+    if (book.id === currentBook.id) {
+      Object.assign(currentBook, data)
+      // not await to get faster updates with pagination(dont wait for data to store)
+      db.books.update(bookId, data).catch(handleError)
+      updateState(state)
+    } else {
+      await db.books.update(bookId, data).catch(handleError)
+      // will change currentBook in updateState
+      await updateState(state)
+    }
+  } catch(e) {
+    handleError(e)
+  }
 }
 
-function updateBook(bookId, data) {
-  const book = state.books.find(b => b.id === bookId)
-  if (!book) {
-    handleError(`Book ${bookId} not found!`)
+async function removeBook(bookId) {
+  try {
+    if (state.books.length === 1) return alert('Cant remove last book')
+    await db.books.where({ id: bookId }).delete()
+
+    state.books = state.books.filter(b => b.id !== bookId)
+    if (bookId === currentBook.id) {
+      state.currentBookId = state.books[0].id
+    }
+
+    await updateState(state)
+  } catch(e) {
+    handleError(e)
   }
-  book = { ...book, ...data }
-
-  db.books.update(bookId, data).catch(handleError)
-
-  updateState(state)
-}
-
-function removeBook(bookId) {
-  if (state.books.length === 1) return alert('Cant remove last book')
-  db.books.where({ id: bookId }).delete().catch(handleError)
-
-  state.books = state.books.filter(b => b.id !== bookId)
-  if (bookId === currentBook.id) {
-    state.currentBookId = state.books[0].id
-  }
-
-  updateState(state)
 }
 
 function partOfSpeech(attr) {
@@ -309,8 +331,7 @@ function renderRemoveBook() {
 
   let myFunction = function() {
     const id = this.getAttribute('data-bookid')
-    removeBook(id)
-    renderBookshelf()
+    removeBook(id).then(renderBookshelf)
   }
 
   for (let i = 0; i < btns.length; i++) {
@@ -352,24 +373,28 @@ function renderBookshelf() {
   renderOpenBook()
 }
 
-function renderPagination() {
+async function renderPagination() {
   // insert book
   const div = document.querySelector('.pagination')
   let curPage
   let curBook
 
-  try {
-    const params = window.location.hash.split('&')
-    curBook = parseInt(params[0].split('=')[1]) || 0
+  const params = window.location.hash.split('&')
+  if (params.length === 2
+      && params[0].split('=')[0] === '#book'
+      && params[1].split('=')[0] === 'page') {
+    curBook = params[0].split('=')[1]
     curPage = parseInt(params[1].split('=')[1]) || 1
-    if (!state.books.find(b => b.id === curBook)) throw 'book not found'
+    if (!state.books.find(b => b.id === curBook)) {
+      handleError(`Trying to sync book because it's not found. Book: ${curBook}`)
+      await syncBook(curBook)
+    }
     state.currentBookId = curBook
-  } catch(e) {
-    handleError(e)
+  } else {
     curBook = state.currentBookId
     curPage = state.books.find(b => b.id === curBook).currentPage
   }
-  updateBook(curBook, { currentPage: curPage })
+  await updateBook(curBook, { currentPage: curPage })
 
   const pages = currentBook.pages
 
@@ -386,53 +411,31 @@ function renderPagination() {
   const pagesHTML = pageBtns.join('&nbsp')
 
   div.innerHTML = pagesHTML
-
-  const paginationBtns = document.querySelectorAll('.pagination .page-btn')
-
-  const myFunction = function() {
-    setTimeout(renderPagination, 1)
-    setTimeout(() => {
-      renderText()
-      window.scrollTo(0, 0)
-    }, 1)
-  }
-  for (let i = 0; i < paginationBtns.length; i++) {
-    paginationBtns[i].addEventListener('click', myFunction, false)
-  }
 }
 
 function handleRoutingChange() {
   window.addEventListener('hashchange', function() {
-    renderPagination()
-    renderText()
+    renderPagination().then(() => {
+      window.scrollTo(0, 0)
+      renderText()
+    })
   })
 }
 
-function afterBookUpload(book) {
-  addBook(book)
+async function afterBookUpload(book) {
+  await addBook(book)
   renderBookshelf()
 }
 
-function handleSyncRoute() {
-  const file = fileInput.files[0]
-  const formData = new FormData()
-  formData.append('file', file)
-  btn.classList.add('-process')
-
-  const params = window.location.hash.split('&')
-  const fileParam = params[0].split('=')
-  if (fileParam[0] === '#syncFile') {
-    const id = fileParams[1]
-
-    fetch(`${backendHost}/sync?id=${id}`, {
+async function syncBook(id) {
+  try {
+    const response = await fetch(`${backendHost}/sync?id=${id}`, {
       method: 'GET'
     }).then(response => response.json())
-      .then(response => {
-        afterBookUpload(response)
-        alert('File successfully synced')
-      })
-      .catch(handleError)
-  }
+
+    await afterBookUpload(response)
+    alert('File successfully synced')
+  } catch(e) { handleError(e) }
 }
 
 function renderUpload() {
@@ -460,16 +463,16 @@ function renderUpload() {
   btn.addEventListener('click', myFunction, false)
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {
-  setupState().then(() => {
-    renderMenu()
-    renderPagination()
-    renderText()
-    renderTranslation()
-    renderRemember()
-    renderSound()
-    renderUpload()
-    renderBookshelf()
-    handleRoutingChange()
-  })
+document.addEventListener("DOMContentLoaded", async function(event) {
+  await setupState()
+
+  renderMenu()
+  await renderPagination()
+  renderText()
+  renderTranslation()
+  renderRemember()
+  renderSound()
+  renderUpload()
+  renderBookshelf()
+  handleRoutingChange()
 })
