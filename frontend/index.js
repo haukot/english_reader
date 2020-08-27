@@ -4,6 +4,8 @@ import { setCORS } from "google-translate-api-browser"
 // setting up cors-anywhere server address
 const translate = setCORS("http://cors-anywhere.herokuapp.com/")
 
+const backendHost = window.location.origin // 'http://localhost:3000'
+
 let curSentenceEl = null
 let curWordEl = null
 let state = null
@@ -321,12 +323,21 @@ function renderBookshelf() {
 function renderPagination() {
   // insert book
   const div = document.querySelector('.pagination')
+  let curPage
+  let curBook
 
-  const params = window.location.hash.split('&')
-  const curBook = parseInt(params[0].split('=')[1]) || 0
-  const curPage = parseInt(params[1].split('=')[1]) || 1
-  state.currentBook = curBook
-  state.books[curBook].currentPage = curPage
+  try {
+    const params = window.location.hash.split('&')
+    curBook = parseInt(params[0].split('=')[1]) || 0
+    curPage = parseInt(params[1].split('=')[1]) || 1
+    state.currentBook = curBook
+    state.books[curBook].currentPage = curPage
+  } catch(e) {
+    console.error('Error, reset book')
+    console.error(e)
+    curBook = state.currentBook
+    curPage = state.books[curBook].currentPage
+  }
   updateState(state)
 
   const pages = state.books[curBook].pages
@@ -349,7 +360,10 @@ function renderPagination() {
 
   const myFunction = function() {
     setTimeout(renderPagination, 1)
-    setTimeout(renderText, 1)
+    setTimeout(() => {
+      renderText()
+      window.scrollTo(0, 0)
+    }, 1)
   }
   for (let i = 0; i < paginationBtns.length; i++) {
     paginationBtns[i].addEventListener('click', myFunction, false)
@@ -361,6 +375,38 @@ function handleRoutingChange() {
     renderPagination()
     renderText()
   })
+}
+
+function afterBookUpload(name, book) {
+  state.books.push({
+    name,
+    text: book.text,
+    pages: book.pages,
+    currentPage: 1
+  })
+  updateState(state)
+  renderBookshelf()
+}
+
+function handleSyncRoute() {
+  const file = fileInput.files[0]
+  const formData = new FormData()
+  formData.append('file', file)
+  btn.classList.add('-process')
+
+  const params = window.location.hash.split('&')
+  const fileParam = params[0].split('=')
+  if (fileParam[0] === '#syncFile') {
+    const name = fileParams[1]
+
+    fetch(`${backendHost}/sync?filename=${name}`, {
+      method: 'GET'
+    }).then(response => response.json())
+      .then(response => {
+        afterBookUpload(name, response)
+      })
+      .catch(handleError)
+  }
 }
 
 function renderUpload() {
@@ -375,20 +421,13 @@ function renderUpload() {
 
     const name = file.name
 
-    fetch('http://localhost:3000/process', {
+    fetch(`${backendHost}/process`, {
       method: 'POST',
       body: formData
     }).then(response => response.json())
       .then(response => {
-        state.books.push({
-          name,
-          text: response.text,
-          pages: response.pages,
-          currentPage: 1
-        })
-        updateState(state)
         btn.classList.remove('-process')
-        renderBookshelf()
+        afterBookUpload(name, response)
       })
       .catch(handleError)
   }

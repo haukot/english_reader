@@ -18,6 +18,21 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+@app.route('/sync', methods=['GET'])
+def sync():
+    filename = request.args.get('file')
+    filename = secure_filename(filename)
+    path = UPLOAD_FOLDER + '/' + filename
+
+    # If exist and readable just return processed file
+    if os.path.isfile(path) and os.access(path, os.R_OK):
+        with open(path, 'r') as f:
+            return Response(f.read(), mimetype='application/json')
+    else:
+        print('File doenst found')
+        return 'File dont found', 400
+
+
 @app.route('/process', methods=['POST'])
 def process():
     # check if the post request has the file part
