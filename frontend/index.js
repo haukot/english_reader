@@ -1,4 +1,5 @@
 import lemmatize from "wink-lemmatizer"
+import Dexie from 'dexie';
 import { setCORS } from "google-translate-api-browser"
 
 // setting up cors-anywhere server address
@@ -10,16 +11,24 @@ let curSentenceEl = null
 let curWordEl = null
 let state = null
 let db = null
-// TODO: can use IndexedDB better(e.g. get in RAM only one book at the time)
+let currentBook = null
+const defaultBook = {
+  id: 'default_book.txt.000kinda000sha000',
+  pages: [[0, 612]],
+  name: "Default book",
+  text: "Default Book. \n <span class=\"sentence\">\u201cThe Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\u201d\n\n</span><span class=\"sentence\">\u2014</span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n\u201cA <span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.\u201d\n\n\u2014L. Sprague De Camp\n</span>",
+  currentPage: 1
+}
 const defaultState = {
   id: 1,
   words: {},
-  currentBook: 0,
+  currentBookId: defaultBook.id,
+  // TODO: do i need pages here?
   books: [
     {
+      id: 'default_book.txt.000kinda000sha000',
       pages: [[0, 612]],
       name: "Default book",
-      text: "Default Book. \n <span class=\"sentence\">\u201cThe Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\u201d\n\n</span><span class=\"sentence\">\u2014</span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n\u201cA <span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.\u201d\n\n\u2014L. Sprague De Camp\n</span>",
       currentPage: 1
     }
   ]
@@ -31,39 +40,65 @@ function handleError(err) {
 }
 
 function setupState() {
-  return new Promise(function(resolve) {
-    const DBOpenRequest = indexedDB.open("store", 3)
-    DBOpenRequest.onupgradeneeded = function() {
-      db = DBOpenRequest.result
-      if (!db.objectStoreNames.contains('state')) {
-        db.createObjectStore('state', { keyPath: 'id' })
-      }
-    }
-    DBOpenRequest.onsuccess = function() {
-      db = DBOpenRequest.result
-      // set state
-      const transaction = db.transaction('state', 'readonly')
-      transaction.onerror = handleError
-      const stateStore = transaction.objectStore('state')
-      const stateRequest = stateStore.get(1)
-      stateRequest.onsuccess = () => {
-        state = stateRequest.result || defaultState
-        resolve()
-      }
-      stateRequest.onerror = handleError
-    }
-    DBOpenRequest.onerror = handleError
-  })
+  return async function() {
+    db = new Dexie("store")
+    db.version(4).stores({ state: "id", books: "id" })
+
+    const stateRes = await db.state.where({ id: 1 }).catch(handleError)
+    updateState(stateRes[0] || defaultState)
+  }
 }
 
 function updateState(newState) {
   state = newState
 
-  const transaction = db.transaction(['state'], 'readwrite')
-  transaction.onerror = handleError
-  const stateStore = transaction.objectStore('state')
-  const stateRequest = stateStore.put(newState)
-  stateRequest.onerror = handleError
+  db.state.put(1, state).catch(handleError)
+
+  if (state.currentBookId !== currentBook.id) {
+    const bookRes = await db.books.where({ id: state.currentBookId }).catch(handleError)
+    if (bookRes[0]) {
+      currentBook = bookRes[0]
+    } else {
+      handleError(`Cant load book ${state.currentBookId}, res is ${bookRes}; set to default book`)
+      currentBook = defaultBook
+    }
+  }
+}
+
+function addBook(book) {
+  state.books.push({
+    id: book.id,
+    name: book.name,
+    pages: book.pages,
+    currentPage: 1
+  })
+  // insert in books with book.text
+  db.books.put(bookId, book).catch(handleError)
+  updateState(state)
+}
+
+function updateBook(bookId, data) {
+  const book = state.books.find(b => b.id === bookId)
+  if (!book) {
+    handleError(`Book ${bookId} not found!`)
+  }
+  book = { ...book, ...data }
+
+  db.books.update(bookId, data).catch(handleError)
+
+  updateState(state)
+}
+
+function removeBook(bookId) {
+  if (state.books.length === 1) return alert('Cant remove last book')
+  db.books.where({ id: bookId }).delete().catch(handleError)
+
+  state.books = state.books.filter(b => b.id !== bookId)
+  if (bookId === currentBook.id) {
+    state.currentBookId = state.books[0].id
+  }
+
+  updateState(state)
 }
 
 function partOfSpeech(attr) {
@@ -146,7 +181,7 @@ function showDict() {
 
 function renderText() {
   const text = document.querySelector('.text')
-  const book = state.books[state.currentBook]
+  const book = currentBook
   const curPage = book.currentPage
   const pages = book.pages
   text.innerHTML = book.text.slice(pages[curPage - 1][0], pages[curPage - 1][1])
@@ -273,11 +308,8 @@ function renderRemoveBook() {
   const btns = document.querySelectorAll('.book-delete')
 
   let myFunction = function() {
-    if (state.books.length === 1) return alert('Cant remove last book')
-
     const id = this.getAttribute('data-bookid')
-    state.books.splice(id, 1)
-    updateState(state)
+    removeBook(id)
     renderBookshelf()
   }
 
@@ -302,16 +334,16 @@ function renderOpenBook() {
 function renderBookshelf() {
   const books = document.querySelector('.books')
 
-  const template = function({ idx, currentPage, name }) {
+  const template = function({ idx, id, currentPage, name }) {
     return `
       <div class="book">
-        ${idx + 1}. <a class="book-open" href="#book=${idx}&page=${currentPage}"> ${name} </a>
-        <button class="book-delete" data-bookid=${idx}> 🗑 </button>
+        ${idx + 1}. <a class="book-open" href="#book=${id}&page=${currentPage}"> ${name} </a>
+        <button class="book-delete" data-bookid=${id}> 🗑 </button>
       </div>`
   }
 
   const html = state.books.map((book, i) => {
-    return template({ idx: i, name: book.name, currentPage: book.currentPage })
+    return template({ idx: i, id: book.id, name: book.name, currentPage: book.currentPage })
   }).join("\n")
 
   books.innerHTML = html
@@ -330,20 +362,19 @@ function renderPagination() {
     const params = window.location.hash.split('&')
     curBook = parseInt(params[0].split('=')[1]) || 0
     curPage = parseInt(params[1].split('=')[1]) || 1
-    state.currentBook = curBook
-    state.books[curBook].currentPage = curPage
+    if (!state.books.find(b => b.id === curBook)) throw 'book not found'
+    state.currentBookId = curBook
   } catch(e) {
-    console.error('Error, reset book')
-    console.error(e)
-    curBook = state.currentBook
-    curPage = state.books[curBook].currentPage
+    handleError(e)
+    curBook = state.currentBookId
+    curPage = state.books.find(b => b.id === curBook).currentPage
   }
-  updateState(state)
+  updateBook(curBook, { currentPage: curPage })
 
-  const pages = state.books[curBook].pages
+  const pages = currentBook.pages
 
   const renderBtn = (page, text=page) => {
-    return `<a class="page-btn ${curPage === page && 'active'}" href="#book=${state.currentBook}&page=${page}">${ text }</a>`
+    return `<a class="page-btn ${curPage === page && 'active'}" href="#book=${state.currentBookId}&page=${page}">${ text }</a>`
   }
 
   const pageBtns = [renderBtn(1)]
@@ -377,14 +408,8 @@ function handleRoutingChange() {
   })
 }
 
-function afterBookUpload(name, book) {
-  state.books.push({
-    name,
-    text: book.text,
-    pages: book.pages,
-    currentPage: 1
-  })
-  updateState(state)
+function afterBookUpload(book) {
+  addBook(book)
   renderBookshelf()
 }
 
@@ -397,13 +422,14 @@ function handleSyncRoute() {
   const params = window.location.hash.split('&')
   const fileParam = params[0].split('=')
   if (fileParam[0] === '#syncFile') {
-    const name = fileParams[1]
+    const id = fileParams[1]
 
-    fetch(`${backendHost}/sync?filename=${name}`, {
+    fetch(`${backendHost}/sync?id=${id}`, {
       method: 'GET'
     }).then(response => response.json())
       .then(response => {
-        afterBookUpload(name, response)
+        afterBookUpload(response)
+        alert('File successfully synced')
       })
       .catch(handleError)
   }
@@ -427,7 +453,7 @@ function renderUpload() {
     }).then(response => response.json())
       .then(response => {
         btn.classList.remove('-process')
-        afterBookUpload(name, response)
+        afterBookUpload(response)
       })
       .catch(handleError)
   }

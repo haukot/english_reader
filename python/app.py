@@ -1,3 +1,4 @@
+import json
 import hashlib
 import os
 from flask import Flask, request, Response
@@ -20,8 +21,7 @@ def allowed_file(filename):
 
 @app.route('/sync', methods=['GET'])
 def sync():
-    filename = request.args.get('file')
-    filename = secure_filename(filename)
+    filename = secure_filename(request.args.get('id'))
     path = UPLOAD_FOLDER + '/' + filename
 
     # If exist and readable just return processed file
@@ -67,8 +67,12 @@ def process():
 
     # TODO: run in a side thread
     processed = process_book(file_str)
+    processed['id'] = filename
+    processed['name'] = file.filename
+
+    res_file = json.dumps(processed)
 
     with open(path, 'w') as f:
-        f.write(processed)
+        f.write(res_file)
 
-    return Response(processed, mimetype='application/json')
+    return Response(res_file, mimetype='application/json')

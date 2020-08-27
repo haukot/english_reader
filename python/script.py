@@ -1,4 +1,3 @@
-import json
 import spacy
 
 nlp = spacy.load("en_core_web_sm")
@@ -78,6 +77,6 @@ def process_book(book):
     if (pages[-1][1] < end_book_idx):
         pages.append([pages[-1][0] + 1, end_book_idx])
 
-    res = json.dumps({'pages': pages, 'text': res_book})
+    res = {'pages': pages, 'text': res_book}
 
     return res

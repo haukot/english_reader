@@ -11,6 +11,7 @@
     "parcel-bundler": "^1.12.4"
   },
   "dependencies": {
+    "dexie": "^3.0.2",
     "google-translate-api-browser": "^1.1.71",
     "wink-lemmatizer": "^3.0.1"
   }
