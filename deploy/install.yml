@@ -38,4 +38,6 @@
     - name: Start docker-compose
       docker_compose:
         project_src: /srv/english_reader
+        files:
+          - docker-compose.production.yml
         build: yes
