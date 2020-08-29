@@ -429,7 +429,7 @@ async function afterBookUpload(book) {
 
 async function syncBook(id) {
   try {
-    const response = await fetch(`${backendHost}/sync?id=${id}`, {
+    const response = await fetch(`${backendHost}/api/v1/sync?id=${id}`, {
       method: 'GET'
     }).then(response => response.json())
 
@@ -450,7 +450,7 @@ function renderUpload() {
 
     const name = file.name
 
-    fetch(`${backendHost}/process`, {
+    fetch(`${backendHost}/api/v1/process`, {
       method: 'POST',
       body: formData
     }).then(response => response.json())

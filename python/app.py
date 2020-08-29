@@ -19,7 +19,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/sync', methods=['GET'])
+@app.route('/api/v1/sync', methods=['GET'])
 def sync():
     filename = secure_filename(request.args.get('id'))
     path = UPLOAD_FOLDER + '/' + filename
@@ -33,7 +33,7 @@ def sync():
         return 'File dont found', 400
 
 
-@app.route('/process', methods=['POST'])
+@app.route('/api/v1/process', methods=['POST'])
 def process():
     # check if the post request has the file part
     if 'file' not in request.files:
