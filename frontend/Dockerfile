@@ -10,4 +10,4 @@ COPY . .
 
 RUN yarn
 
-CMD "yarn && yarn start"
+CMD sh -c "yarn && yarn start"

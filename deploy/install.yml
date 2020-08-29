@@ -30,6 +30,11 @@
       tags: ["nginx"]
 
   tasks:
+    - name: install 'Docker SDK for Python'
+      pip:
+        name:
+        - docker
+        - docker_compose
     - name: Start docker-compose
       docker_compose:
         project_src: /srv/english_reader

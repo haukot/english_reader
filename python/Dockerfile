@@ -10,4 +10,4 @@ RUN poetry run python -m spacy download en_core_web_sm
 COPY . .
 RUN poetry install
 
-CMD poetry run flask run --host 0.0.0.0 --port 3000
+CMD sh -c "poetry install && poetry run flask run --host 0.0.0.0 --port 3000"
