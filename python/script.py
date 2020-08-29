@@ -58,9 +58,11 @@ def process_book(book):
         return part
 
     while True:
-        end_idx = book.find('\n', part_start_idx + 100000)
+        # Split to part to more smooth memory consumption
+        min_part_size = 20000
+        end_idx = book.find('\n', part_start_idx + min_part_size)
         if (end_idx == -1):
-            end_idx = part_start_idx + 100000
+            end_idx = part_start_idx + min_part_size
 
         part = book[part_start_idx:end_idx]
 
