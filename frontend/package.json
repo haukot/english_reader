@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "parcel build index.html",
+    "build": "rm -rf dist && parcel build index.html",
     "start": "parcel -p 8888 watch index.html"
   },
   "devDependencies": {

@@ -12,6 +12,7 @@ services:
       - ~/.bash_history:/root/.bash_history
       - python_libs:/root/.cache/pypoetry
       - ./python/:/srv/python/
+    restart: on-failure
     ports:
       - 3000:3000
 
@@ -19,9 +20,8 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
+    command: sh -c "yarn && yarn build"
     volumes:
       - ~/.bash_history:/root/.bash_history
       - ./frontend:/srv/frontend
       - node_modules:/srv/frontend/node_modules
-    ports:
-      - 8888:8888
