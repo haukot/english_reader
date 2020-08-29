@@ -2,29 +2,14 @@
 - hosts: web
   remote_user: root
 
-  pre_tasks:
-  - name: install packages
-    apt:
-      pkg:
-      - ntp
-      - htop
-      - git
-      - pv   # pipeline processing in procents
-      - software-properties-common
-      - ncdu # hd memory
-      - curl
-      - unzip
-      - tree
-      - vim
-  - name: clone repo
+  tasks:
+  - name: Update repo
     git:
       repo: 'https://github.com/haukot/english_reader.git'
       dest: /srv/english_reader
-      accept_hostkey: yes
-      update: no
-
-  roles:
-    - role: "nickjj.docker"
-      tags: ["docker"]
-    - role: nginx
-      tags: ["nginx"]
+      update: yes
+  - name: Restart docker-compose
+    docker_compose:
+      project_src: /srv/english_reader
+      build: no
+      restarted: yes
