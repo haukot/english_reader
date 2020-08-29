@@ -5,7 +5,7 @@ import { setCORS } from "google-translate-api-browser"
 // setting up cors-anywhere server address
 const translate = setCORS("http://cors-anywhere.herokuapp.com/")
 
-const backendHost = `${location.protocol}//${location.hostname}:3000` // 'http://localhost:3000'
+const backendHost = location.hostname === 'localhost' ? 'http://localhost:3000' : 'http://reader.haukot.ru'
 
 let curSentenceEl = null
 let curWordEl = null
