@@ -359,7 +359,7 @@ function renderBookshelf() {
     return `
       <div class="book">
         ${idx + 1}. <a class="book-open" href="#book=${id}&page=${currentPage}"> ${name} </a>
-        <button class="book-delete" data-bookid=${id}> 🗑 </button>
+        <button class="book-delete" data-bookid=${id}> 	&#128465; </button>
       </div>`
   }
 
