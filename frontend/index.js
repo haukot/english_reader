@@ -202,11 +202,14 @@ function showDict() {
 }
 
 function renderText() {
-  const text = document.querySelector('.text')
+  const textEl = document.querySelector('.text')
   const book = currentBook
   const curPage = book.currentPage
   const pages = book.pages
-  text.innerHTML = book.text.slice(pages[curPage - 1][0], pages[curPage - 1][1])
+  const text = book.text
+        .slice(pages[curPage - 1][0], pages[curPage - 1][1])
+        .replace(/^\n+/, "") // remove leading \n's
+  textEl.innerHTML = text
 
   // process spans
   let elements = document.querySelectorAll('.text span:not(.sentence)')
