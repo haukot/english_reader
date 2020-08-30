@@ -2,7 +2,7 @@ import lemmatize from "wink-lemmatizer"
 import Dexie from 'dexie';
 import { setCORS } from "google-translate-api-browser"
 
-const backendHost = location.hostname === 'localhost' ? 'http://localhost:3000' : 'http://reader.haukot.ru'
+const backendHost = location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin
 
 // setting up cors-anywhere server address
 const translate = setCORS(`${backendHost}/api/v1/proxy/`)
