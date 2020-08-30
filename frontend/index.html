@@ -41,7 +41,7 @@
         font-size: 1rem;
     }
 
-    .book-container {
+    .container {
         --padding: 1rem;
         margin: 0 auto;
         width: 45rem;
@@ -150,31 +150,35 @@
 </head>
 
 <body>
-  <a class="menu-button"> &#9776; </a>
-  <div class="menu-container hidden">
-    <div>
-      <input id="input-file" type="file" >
-      <button class="upload"> Upload book </button>
-    </div>
-    <h3> Books: </h3>
-    <div class="books">
-    </div>
-  </div>
-
-  <div class="book-container">
-    <div class="text"></div>
-
-    <div class="pagination"></div>
-
-
-    <div class="dictionary-container hidden">
-      <div class="buttons">
-        <button class="translate"> Translate </button>
-        <button class="remember"> Remember </button>
-        <button class="sound"> &nbsp </button>
+  <div class="container">
+    <div class="menu">
+      <a class="menu-button"> &#9776; </a>
+      <div class="menu-container hidden">
+        <div>
+          <input id="input-file" type="file" >
+          <button class="upload"> Upload book </button>
+        </div>
+        <h3> Books: </h3>
+        <div class="books">
+        </div>
       </div>
-      <div class="translation"></div>
-      <div class="dictionary"></div>
+    </div>
+
+    <div class="book-container">
+      <div class="text"></div>
+
+      <div class="pagination"></div>
+
+
+      <div class="dictionary-container hidden">
+        <div class="buttons">
+          <button class="translate"> Translate </button>
+          <button class="remember"> Remember </button>
+          <button class="sound"> &nbsp </button>
+        </div>
+        <div class="translation"></div>
+        <div class="dictionary"></div>
+      </div>
     </div>
   </div>
 
