@@ -2,10 +2,10 @@ import lemmatize from "wink-lemmatizer"
 import Dexie from 'dexie';
 import { setCORS } from "google-translate-api-browser"
 
-// setting up cors-anywhere server address
-const translate = setCORS("http://cors-anywhere.herokuapp.com/")
-
 const backendHost = location.hostname === 'localhost' ? 'http://localhost:3000' : 'http://reader.haukot.ru'
+
+// setting up cors-anywhere server address
+const translate = setCORS(`${backendHost}/api/v1/proxy/`)
 
 let curSentenceEl = null
 let curWordEl = null
@@ -403,9 +403,9 @@ async function renderPagination() {
   }
 
   const pageBtns = [renderBtn(1)]
-  if (curPage > 2) pageBtns.push(renderBtn(curPage - 1, '<< Prev'))
+  if (curPage > 2) pageBtns.push(renderBtn(curPage - 1, '<&nbsp;Prev'))
   if (curPage > 1) pageBtns.push(renderBtn(curPage))
-  if (pages.length > curPage + 1) pageBtns.push(renderBtn(curPage + 1, 'Next >>'))
+  if (pages.length > curPage + 1) pageBtns.push(renderBtn(curPage + 1, 'Next&nbsp;>'))
   if (pages.length > curPage) pageBtns.push(renderBtn(pages.length))
 
   const pagesHTML = pageBtns.join('&nbsp')

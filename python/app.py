@@ -1,9 +1,12 @@
 import json
 import hashlib
+from urllib.parse import urlparse
+import requests
 import os
-from flask import Flask, request, Response
+from flask import Flask, request, Response, stream_with_context
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+
 
 from script import process_book
 
@@ -17,6 +20,19 @@ UPLOAD_FOLDER = './files'
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# CORS proxy for google translate(mimic for cors-anywhere)
+@app.route('/api/v1/proxy/<path:url>', methods=['GET'])
+def proxy(url):
+    headers = dict(request.headers).copy()
+    headers['host'] = urlparse(url).hostname
+    # cant use requests params arg because some params are duplicates
+    req = requests.get(url+'?'+request.query_string.decode("utf-8"), headers=headers)
+    response = Response(req.text,
+                        status=req.status_code,
+                        content_type=req.headers['content-type'])
+    return response
 
 
 @app.route('/api/v1/sync', methods=['GET'])
