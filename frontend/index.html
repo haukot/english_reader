@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="script-src 'self' https: http: 'unsafe-inline' 'unsafe-eval'">
   <link rel="icon" href="data:," />
   <title>Reader</title>
@@ -31,9 +32,6 @@
 
     body {
         font-family: "Bookerly";
-        margin: 0 auto;
-        width: 900px;
-        margin-top: 3rem;
     }
     html, body {
         font-size: 20px;
@@ -43,13 +41,24 @@
         font-size: 1rem;
     }
 
+    .book-container {
+        --padding: 1rem;
+        margin: 0 auto;
+        width: 45rem;
+        max-width: calc(100% - var(--padding)*2);
+        padding: var(--padding);
+        margin-top: 3rem;
+    }
+
     .dictionary-container {
         border: 1px solid #ececec;
         position: fixed;
-        left: calc((100% - 48rem)/2);
+        right: 0;
+        left: 0;
+        margin: 0 auto;
         padding: 1.5rem;
         background: white;
-        width: 44rem;
+        max-width: 44rem;
         max-height: 40vh;
         overflow-y: scroll;
         box-shadow: 0 0 7px #d2ae79;
