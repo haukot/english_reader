@@ -14,4 +14,3 @@ TODO:
 NOTES:
 
 * browserlist version setted(in package.json) because of regeneratorRuntine error with parcel https://github.com/parcel-bundler/parcel/issues/2128
-* htpasswd файл для nginx надо руками на сервере создавать

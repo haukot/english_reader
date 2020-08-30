@@ -1,0 +1,21 @@
+# The english book's reader
+
+|<img src="docs/screen.png">|
+| ---- |
+
+## Installation
+
+1. Copy and fill hosts and vars for deploy
+```
+$ cd deploy
+$ cp hosts.example.ini hosts.ini
+$ cp group_vars/all.example.yml group_vars/all.yml
+```
+
+2. After server setup create htpasswd file(on server)
+
+```
+$ sudo sh -c "echo -n user:' >> /etc/nginx/.htpasswd"
+$ sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
+# will ask for password
+```
