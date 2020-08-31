@@ -1,4 +1,4 @@
-# The english book's reader
+# Reader for English books
 
 |<img src="docs/screen.png">|
 | ---- |
