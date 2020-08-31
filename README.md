@@ -19,3 +19,10 @@ $ sudo sh -c "echo -n user:' >> /etc/nginx/.htpasswd"
 $ sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
 # will ask for password
 ```
+
+3. Setup ssl certificate(needed for support offline feature), e.g. with letsencrypt(certbot). Like
+
+```
+$ sudo certbot --nginx
+```
+The nginx config waits for them in the folder `/etc/letsencrypt/live/{{ nginx__host }}/`
