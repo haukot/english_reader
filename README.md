@@ -3,6 +3,8 @@
 |<img src="docs/screen.png">|
 | ---- |
 
+Works only with `.txt` files.
+
 ## Installation
 
 1. Copy and fill hosts and vars for deploy
