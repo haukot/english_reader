@@ -39,6 +39,16 @@ function handleError(err) {
   alert(err)
 }
 
+// Offline page
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+  .then((reg) => {
+    console.log('Service worker registration succeeded. Scope is ' + reg.scope);
+  }).catch((error) => {
+    console.log('Service worker registration failed with ' + error);
+  })
+}
+
 async function setupState() {
   db = new Dexie("store")
   db.version(4).stores({ state: "id", books: "id" })
@@ -237,7 +247,6 @@ function renderText() {
     let attribute = this.getAttribute("t")
     lookup(attribute, word)
       .then(res => {
-        // console.log('HUI', res)
         let defs = res.map(r => {
           // Показывает примеры с синонимами по умолчанию.
           let examples = r.exp.map(e => `"${e}"`).filter(e => e.includes(word)).join(' ')
