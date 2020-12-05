@@ -1,5 +1,7 @@
 # Reader for English books
 
+## BEWARE! There is pure Javascript, made for myself project, no frameworks used. 
+
 |<img src="docs/screen.png">|
 | ---- |
 
