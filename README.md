@@ -1,6 +1,6 @@
 # Reader for English books
 
-## BEWARE! This project I made for myself, and it's pure Javascript project, no frameworks used. 
+## BEWARE! This project I made for myself, it's vanilla Javascript project written in the fast&dirty way. 
 
 |<img src="docs/screen.png">|
 | ---- |
