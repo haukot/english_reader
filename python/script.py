@@ -16,9 +16,12 @@ def process_book(book):
     pages = []
     page_length = 8000
     res_book = ""
+    global_page_start = 0
+    print("VARS: book_tags_offset, (start, end), cur_page_start, part_start_idx, end_idx, offset")
 
     def transform(part):
         nonlocal book_tags_offset
+        nonlocal global_page_start
 
         offset = 0
         cur_page_start = 0
@@ -48,13 +51,21 @@ def process_book(book):
             # detect pages
             end_idx = sent.end_char + offset
             if (end_idx - cur_page_start > page_length):
-                pages.append([
-                    cur_page_start + book_tags_offset + part_start_idx,
-                    end_idx + book_tags_offset + part_start_idx
-                ])
+                global_page_end = end_idx + book_tags_offset + part_start_idx
+
+                print("PAGE: %s, (%s, %s), %s, %s, %s, %s" % ( book_tags_offset,
+                                                               global_page_start,
+                                                               global_page_end,
+                                                               cur_page_start,
+                                                               part_start_idx, end_idx, offset))
+                pages.append([global_page_start, global_page_end])
+                global_page_start = global_page_end
                 cur_page_start = end_idx
 
+        # Ofter part will end up earlier than new page will be created. So first page of
+        # every part will be bigger, up to 2 * page_length in extreme situations.
         book_tags_offset = book_tags_offset + offset
+        print("End part. book_tags_offset: %s, last offset: %s" % (book_tags_offset, offset))
         return part
 
     while True:
