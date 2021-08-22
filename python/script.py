@@ -12,11 +12,11 @@ tags = {
 
 def process_book(book):
     part_start_idx = 0
-    book_tags_offset = 0
+    book_tags_offset = 0 # pointer in result book with tags
     pages = []
     page_length = 8000
     res_book = ""
-    global_page_start = 0
+    global_page_start = 0 # pointer on start page idx in result book
     print("VARS: book_tags_offset, (start, end), cur_page_start, part_start_idx, end_idx, offset")
 
     def transform(part):
