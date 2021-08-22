@@ -14,3 +14,5 @@ with open('test/test.txt', 'r') as file:
         assert processed['pages'] == expected['pages'], "Pages are not matched\n\n" + json.dumps(processed['pages'])
         assert processed['text'] == expected['text'], "Text is not matched\n\n" + processed['text']
         assert json.dumps(processed) == expected_str, "Something is not matched\n\n" + json.dumps(processed)
+
+    print("Success!")
