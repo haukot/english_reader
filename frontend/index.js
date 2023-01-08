@@ -321,25 +321,29 @@ function renderText() {
     const header  = `<b><span class="dict_word_name">${word}</span> <span class="dict_word_pronunciation"></span></b>&nbsp;&nbsp;<button class="sound"> &nbsp; </button>`
     dict.innerHTML = `${header} ${tabs}`
     renderSound()
-    // can be definition, abbreviation, etc
-    const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0]
-    let wordIndex = wordsData.findIndex((wordData) => {
-      return Object.keys(wordData.description).includes(curPartOfSpeech)
-    })
-    if (wordIndex === -1) wordIndex = 0
-    renderTabBody(wordsData, wordIndex, curPartOfSpeech, 0)
 
-    // event listener for tabs
-    let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
-    for (let i = 0; i < tabEls.length; i++) {
-      tabEls[i].addEventListener('click', () => {
-        const tab = tabEls[i]
-        const wordIndex = tab.getAttribute('data-word-index')
-        const curPartOfSpeech = tab.getAttribute('data-part-of-speech')
-        const partOfSpeechIndex = parseInt(tab.getAttribute('data-part-of-speech-index'), 10)
+    // иногда слово не находится и рендерить нечего. e.g. sharpshooting
+    if (wordsData) {
+      // can be definition, abbreviation, etc
+      const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0]
+      let wordIndex = wordsData.findIndex((wordData) => {
+        return Object.keys(wordData.description).includes(curPartOfSpeech)
+      })
+      if (wordIndex === -1) wordIndex = 0
+      renderTabBody(wordsData, wordIndex, curPartOfSpeech, 0)
 
-        renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
-      }, false)
+      // event listener for tabs
+      let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
+      for (let i = 0; i < tabEls.length; i++) {
+        tabEls[i].addEventListener('click', () => {
+          const tab = tabEls[i]
+          const wordIndex = tab.getAttribute('data-word-index')
+          const curPartOfSpeech = tab.getAttribute('data-part-of-speech')
+          const partOfSpeechIndex = parseInt(tab.getAttribute('data-part-of-speech-index'), 10)
+
+          renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
+        }, false)
+      }
     }
 
     showDict()
