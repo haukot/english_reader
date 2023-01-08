@@ -10,7 +10,7 @@ let wordsDict = {}
 window.addEventListener('load', function() {
   const scripts = document.querySelectorAll('.words_dict_data')
   for (let i = 0; i < scripts.length; i++) {
-    wordsObj = window[`wordsDict${i + 1}`]
+    const wordsObj = window[`wordsDict${i + 1}`]
     for (let key in wordsObj) {
       wordsDict[key] = wordsObj[key];
     }
