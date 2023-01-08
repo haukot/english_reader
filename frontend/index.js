@@ -169,7 +169,7 @@ function lemma(attr, word) {
 function lookup(attr, word) {
   const wordData = wordsDict[word]
   const lemmatized = lemma(attr, word)
-  lemmatizedWordData = wordsDict[lemmatized]
+  const lemmatizedWordData = wordsDict[lemmatized]
 
   let res = wordData || lemmatizedWordData
   // string if it another variant of word, or(maybe in future?) deriviative
