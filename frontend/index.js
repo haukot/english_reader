@@ -28,9 +28,9 @@ let state = null
 let db = null
 const defaultBook = {
   id: 'default_book.txt.000kinda000sha000',
-  pages: [[0, 612]],
+  pages: [[0, 812]],
   name: "Default book",
-  text: "Default Book. \n <span class=\"sentence\">The Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\n\n</span><span class=\"sentence\"></span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n<span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.\n\nL. Sprague De Camp\n</span>",
+  text: "Default Book. \n <span class=\"sentence\">The Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\n\n</span><span class=\"sentence\"></span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n<span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.I'm <span t=\"v\">living</span>\n\nL. Sprague De Camp\n</span>",
   currentPage: 1
 }
 let currentBook = defaultBook
@@ -167,11 +167,15 @@ function lemma(attr, word) {
 }
 
 function lookup(attr, word) {
-  const wordData = wordsDict[word]
+  const wordsData = wordsDict[word]
   const lemmatized = lemma(attr, word)
   const lemmatizedWordData = wordsDict[lemmatized]
+  const curPartOfSpeech = partOfSpeech(attr)
 
-  let res = wordData || lemmatizedWordData
+  let res = wordsData || lemmatizedWordData
+  if (wordsData && lemmatizedWordData && lemmatized !== word) {
+    res = wordsData.concat(lemmatizedWordData)
+  }
   // string if it another variant of word, or(maybe in future?) deriviative
   if (res && typeof res === 'string') {
     wordsDict[res]
@@ -221,13 +225,16 @@ function renderTabBody (wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex
   const partOfSpeechSelector = `[data-part-of-speech="${curPartOfSpeech}"]`
   const partOfSpeechIndexSelector = `[data-part-of-speech-index="${partOfSpeechIndex}"]`
   const tabEl = document.querySelector(`.dict_tabs-header .tab${wordIndexSelector}${partOfSpeechSelector}${partOfSpeechIndexSelector}`)
-  tabEl.classList.add('active')
+  if (tabEl) {
+    // такого не должно быть, но бывает - и лучше что-то показать, чем даже попап не показывать
+    tabEl.classList.add('active')
+  }
 
   const wordData = wordsData[wordIndex]
   // TODO: move <p> of origin to parser script(convert_epub_to_json.rb)?
   let description = curPartOfSpeech === 'origin'
     ? `<p>${wordData.origin}</p>`
-    : wordData.description[curPartOfSpeech][partOfSpeechIndex].description
+    : wordData.description[curPartOfSpeech] && wordData.description[curPartOfSpeech][partOfSpeechIndex].description
 
   if (wordData.word_note) {
     description = `${wordData.word_note}<br/>${description}`
@@ -242,6 +249,9 @@ function renderTabBody (wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex
 
   const tabPronunciation = document.querySelector('.dict_word_pronunciation')
   tabPronunciation.innerHTML = wordData.pronunciation
+
+  const tabName = document.querySelector('.dict_word_name')
+  tabName.innerHTML = wordData.word
 }
 
 function getTabsHeaderHtml(wordsData) {
@@ -252,7 +262,7 @@ function getTabsHeaderHtml(wordsData) {
   const tabsContent = wordsData.map((wordData, i) => {
     const renderTabHeader = (name, curPartOfSpeech, partOfSpeechIndex, wordIndex) => {
       return `<a class="tab" data-word-index="${wordIndex}" data-part-of-speech="${curPartOfSpeech}" data-part-of-speech-index="${partOfSpeechIndex}">${name}</a>`
-    } 
+    }
     const tabHeaders = Object.keys(wordData.description)
       .map((name) => {
         return wordData.description[name].map((_, pI) => {
@@ -308,17 +318,23 @@ function renderText() {
     const wordsData = lookup(attribute, word)
 
     const tabs = getTabsHeaderHtml(wordsData)
-    const header  = `<b>${word} <span class="dict_word_pronunciation"></span></b>&nbsp;&nbsp;<button class="sound"> &nbsp; </button>`
+    const header  = `<b><span class="dict_word_name">${word}</span> <span class="dict_word_pronunciation"></span></b>&nbsp;&nbsp;<button class="sound"> &nbsp; </button>`
     dict.innerHTML = `${header} ${tabs}`
     renderSound()
     // can be definition, abbreviation, etc
-    const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0] 
-    renderTabBody(wordsData, 0, curPartOfSpeech, 0)
+    const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0]
+    const wordIndex = wordsData.findIndex((wordData) => {
+      return Object.keys(wordData.description).includes(curPartOfSpeech)
+    })
+    const partOfSpeechIndex = Object.keys(wordsData[wordIndex].description).findIndex((name) => {
+      return name === curPartOfSpeech
+    })
+    renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
 
     // event listener for tabs
     let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
     for (let i = 0; i < tabEls.length; i++) {
-      tabEls[i].addEventListener('click', () => { 
+      tabEls[i].addEventListener('click', () => {
         const tab = tabEls[i]
         const wordIndex = tab.getAttribute('data-word-index')
         const curPartOfSpeech = tab.getAttribute('data-part-of-speech')
@@ -382,6 +398,7 @@ function renderSound() {
   let btn = document.querySelector('button.sound')
 
   let myFunction = function() {
+    // const word = document.querySelector('.dict_word_name').innerHTML.toLowerCase()
     const word = curWordEl.innerHTML.toLowerCase()
     const player = new Audio(`https://voice.reverso.net/RestPronunciation.svc/v1/output=json/GetVoiceStream/voiceName=Heather22k?mp3BitRate=64&inputText=${btoa(word)}`)
     player.play()
