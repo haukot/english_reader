@@ -326,10 +326,7 @@ function renderText() {
     const wordIndex = wordsData.findIndex((wordData) => {
       return Object.keys(wordData.description).includes(curPartOfSpeech)
     })
-    const partOfSpeechIndex = Object.keys(wordsData[wordIndex].description).findIndex((name) => {
-      return name === curPartOfSpeech
-    })
-    renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
+    renderTabBody(wordsData, wordIndex, curPartOfSpeech, 0)
 
     // event listener for tabs
     let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
