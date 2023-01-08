@@ -8,22 +8,7 @@
 
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css" integrity="sha512-NmLkDIU1C/C88wi324HBc+S2kLhi08PN5GDeUVVVC/BVt/9Izdsc9SVeVfA1UZbY3sHUlDSyRXhCzHfr6hmPPw==" crossorigin="anonymous" /> -->
 
-  <script class="cdn" src="https://cdn.jsdelivr.net/npm/wordpos-web@1.0.2/dist/wordpos.min.js"></script>
-
-  <!-- <script class="self" src="../../dist/wordpos.min.js"></script> -->
-  <script class="init">
-    let wordpos = window.wordpos = new WordPOS({
-      preload: true,
-      includeData: true,
-      // dictPath: '../dict',  // relative to dist/
-      dictPath: 'https://cdn.jsdelivr.net/npm/wordpos-web@1.0.2/dict',
-      profile: true,
-      debug: true,
-      // stopwords: false
-    });
-  </script>
-
-  <script src="./index.js" name="main"></script>
+  <script type="module" src="./index.js" name="main"></script>
   <style>
     @font-face {
       font-family: "Bookerly";
@@ -88,11 +73,40 @@
     button.-process {
         background-color: #ff8800!important;
     }
-    .dictionary-container .buttons .sound {
+    .dictionary-container button.sound {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAcUlEQVQ4y2P4//8/AyUYQhAH3gNxA7IAIQPmo/H3g/QA8XkgFiBkwHyoYnRQABVfj88AmGZcTuuHyjlgMwBZM7IE3NlQGhQe65EN+I8Dw8MLGgYoFpFqADK/YUAMwOsFigORatFIlYRElaRMWmaiBAMAp0n+3U0kqkAAAAAASUVORK5CYII=);
         background-position: center;
         background-repeat: no-repeat;
         width: 28px;
+        vertical-align: text-bottom;
+    }
+    .dictionary-container button.remember {
+        padding: 0;
+        vertical-align: bottom;
+        width: 1.5rem;
+    }
+    .dictionary-container button.remember svg {
+      width: 20px;
+      height: 100%;
+      font-size: 1.5rem;
+    }
+    .dictionary-container button.remember svg path {
+      fill: #ec9800;
+    }
+
+    a.tab {
+        text-decoration: underline;
+    }
+    a.tab.active {
+        color: #d87f20;
+    }
+
+    .dict_tabs-body > div {
+        margin-top: 0.5rem;
+    }
+
+    .dict_tabs-body div > div {
+      margin-left: 1.5rem;
     }
 
     .translation {
@@ -172,9 +186,10 @@
 
       <div class="dictionary-container hidden">
         <div class="buttons">
+          <button class="remember"> 
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z"/></svg>
+          </button>
           <button class="translate"> Translate </button>
-          <button class="remember"> Remember </button>
-          <button class="sound"> &nbsp </button>
         </div>
         <div class="translation"></div>
         <div class="dictionary"></div>

@@ -1,6 +1,11 @@
 require 'nokogiri'
 require 'json'
 
+## Run in the folder of epub
+## where should be texts like text0001.html, text0002.html, etc
+
+
+
 def clean_html(div)
     return nil if div.nil?
 
@@ -23,7 +28,7 @@ def clean_html(div)
     end
     while div.xpath('.//blockquote').length > 0
         div.xpath('.//blockquote').each do |blockquote|
-            blockquote.replace("<p>#{blockquote.inner_html}</p>")
+            blockquote.replace("<div>#{blockquote.inner_html}</div>")
         end
     end
     res = div.inner_html
@@ -172,9 +177,10 @@ end
             raise e
         end
     end
-    File.open("words#{i}.json", 'w') { |file| file.write(JSON.pretty_generate(words)) }
+    File.open("words#{i}.js", 'w') { |file| file.write("export default #{words.to_json}") }
+    # File.open("words#{i}.js", 'w') { |file| file.write("export default #{JSON.pretty_generate(words)}") }
     
-    puts "File written words#{i}.json"
+    puts "File written words#{i}.js"
 end
 
 puts "Finish"

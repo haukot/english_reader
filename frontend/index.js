@@ -4,6 +4,36 @@ import { setCORS } from "google-translate-api-browser"
 
 const backendHost = location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin
 
+let wordsDict = {}
+const wordsDictCallback = function (wordsObj) {
+  for (let key in wordsObj.default) {
+    wordsDict[key] = wordsObj.default[key];
+  }
+}
+
+// TODO: it's not working in array, because parcel relies on static parsing of files
+// Maybe move to static files?
+import('./words_dict/words1.js').then(wordsDictCallback)
+import('./words_dict/words2.js').then(wordsDictCallback)
+import('./words_dict/words3.js').then(wordsDictCallback)
+import('./words_dict/words4.js').then(wordsDictCallback)
+import('./words_dict/words5.js').then(wordsDictCallback)
+import('./words_dict/words6.js').then(wordsDictCallback)
+import('./words_dict/words7.js').then(wordsDictCallback)
+import('./words_dict/words8.js').then(wordsDictCallback)
+import('./words_dict/words9.js').then(wordsDictCallback)
+import('./words_dict/words10.js').then(wordsDictCallback)
+import('./words_dict/words11.js').then(wordsDictCallback)
+import('./words_dict/words12.js').then(wordsDictCallback)
+import('./words_dict/words13.js').then(wordsDictCallback)
+import('./words_dict/words14.js').then(wordsDictCallback)
+import('./words_dict/words15.js').then(wordsDictCallback)
+import('./words_dict/words16.js').then(wordsDictCallback)
+import('./words_dict/words17.js').then(wordsDictCallback)
+import('./words_dict/words18.js').then(wordsDictCallback)
+import('./words_dict/words19.js').then(wordsDictCallback)
+
+
 // setting up cors-anywhere server address
 const translate = setCORS(`${backendHost}/api/v1/proxy/`)
 
@@ -41,7 +71,8 @@ function handleError(err) {
 
 // Offline page
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
+  const url = new URL('sw.js', import.meta.url);
+  navigator.serviceWorker.register(url)
   .then((reg) => {
     console.log('Service worker registration succeeded. Scope is ' + reg.scope);
   }).catch((error) => {
@@ -151,34 +182,16 @@ function lemma(attr, word) {
 }
 
 function lookup(attr, word) {
-  const funcs = {
-    x: 'lookup',
-    n: 'lookupNoun',
-    j: 'lookupAdjective',
-    d: 'lookupAdverb',
-    v: 'lookupVerb',
+  const wordData = wordsDict[word]
+  const lemmatized = lemma(attr, word)
+  lemmatizedWordData = wordsDict[lemmatized]
+
+  let res = wordData || lemmatizedWordData
+  // string if it another variant of word, or(maybe in future?) deriviative
+  if (res && typeof res === 'string') {
+    wordsDict[res]
   }
-  const lookupFunc = funcs[attr]
-
-  return wordpos[lookupFunc](word)
-    .then(res => {
-      if (res.length === 0) {
-        const lemmatized = lemma(attr, word)
-
-        return Promise.all([wordpos.lookup(word), wordpos[lookupFunc](lemmatized)])
-          .then((res) => {
-            let [resAll, resLemm] = res
-            const delimiterEntity = {
-              def: `<b>All results:</b>`,
-              exp: [],
-              synonyms: []
-            }
-            if (resAll.length > 0) resAll = [delimiterEntity, ...resAll]
-            return [...resLemm, ...resAll]
-          })
-      }
-      return res
-    })
+  return res
 }
 
 function hide(el) {
@@ -209,6 +222,69 @@ function showDict() {
   }
 
   show(dictCont)
+}
+
+function renderTabBody (wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex) {
+  if (!wordsData) return
+
+  const tabEls = document.querySelectorAll('.dict_tabs-header .tab')
+  for (let i = 0; i < tabEls.length; i++) {
+    tabEls[i].classList.remove('active')
+  }
+
+  const wordIndexSelector = `[data-word-index="${wordIndex}"]`
+  const partOfSpeechSelector = `[data-part-of-speech="${curPartOfSpeech}"]`
+  const partOfSpeechIndexSelector = `[data-part-of-speech-index="${partOfSpeechIndex}"]`
+  const tabEl = document.querySelector(`.dict_tabs-header .tab${wordIndexSelector}${partOfSpeechSelector}${partOfSpeechIndexSelector}`)
+  tabEl.classList.add('active')
+
+  const wordData = wordsData[wordIndex]
+  // TODO partofspeech notes?
+  // TODO: move <p> of origin to parser script(convert_epub_to_json.rb)?
+  let description = curPartOfSpeech === 'origin'
+    ? `<p>${wordData.origin}</p>`
+    : wordData.description[curPartOfSpeech][partOfSpeechIndex].description
+
+  if (wordData.word_note) {
+    description = `${wordData.word_note}<br/>${description}`
+  }
+
+  if (wordData.description[curPartOfSpeech] && wordData.description[curPartOfSpeech].notes) {
+    description = `${wordData.description[curPartOfSpeech].notes}<br/>${description}`
+  }
+
+  const tabBody = document.querySelector('.dict_tabs-body')
+  tabBody.innerHTML = description
+
+  const tabPronunciation = document.querySelector('.dict_word_pronunciation')
+  tabPronunciation.innerHTML = wordData.pronunciation
+}
+
+function getTabsHeaderHtml(wordsData) {
+  if (!wordsData) return ''
+
+  const hasNumber = wordsData.length > 1
+
+  const tabsContent = wordsData.map((wordData, i) => {
+    const renderTabHeader = (name, curPartOfSpeech, partOfSpeechIndex, wordIndex) => {
+      return `<a class="tab" data-word-index="${wordIndex}" data-part-of-speech="${curPartOfSpeech}" data-part-of-speech-index="${partOfSpeechIndex}">${name}</a>`
+    } 
+    const tabHeaders = Object.keys(wordData.description)
+      .map((name) => {
+        return wordData.description[name].map((_, pI) => {
+          return renderTabHeader(name, name, pI, i)
+        })
+      }).flat()
+    if (wordData.origin) tabHeaders.push(renderTabHeader('origin', 'origin', 0, i))
+
+    let res = tabHeaders.join('&nbsp;|&nbsp;')
+    if (hasNumber) {
+      res = `<span class="word-number">${i + 1}.&nbsp;</span>${res}`
+    }
+    return `<div class="tabs-line">${res}</div>`
+  }).join('')
+  const tabs = "<div class='dict_tabs'><div class='dict_tabs-header'>" + tabsContent + "</div><div class='dict_tabs-body'></div></div>"
+  return tabs
 }
 
 function renderText() {
@@ -245,22 +321,30 @@ function renderText() {
     let word = this.innerHTML
 
     let attribute = this.getAttribute("t")
-    lookup(attribute, word)
-      .then(res => {
-        let defs = res.map(r => {
-          // Показывает примеры с синонимами по умолчанию.
-          let examples = r.exp.map(e => `"${e}"`).filter(e => e.includes(word)).join(' ')
-          if (examples.length > 0) examples = `|| E.g.: <i>${examples}</i>`
-          let synonims = r.synonyms.filter(s => s !== word).map(s => `<a href='123'>${s}</a>`).join(', ')
-          if (synonims.length > 0) synonims = `(${synonims})`
-          return `<li>${synonims} <span>${r.def}</span> ${examples} </li>`
-        }).join('')
+    const wordsData = lookup(attribute, word)
 
-        const lemmaWord = lemma(attribute, word) !== word ? `, ${lemma(attribute, word)}` : ''
-        const header  = `<b>${word} (${partOfSpeech(attribute, word)}${lemmaWord})</b>`
-        dict.innerHTML = `${header} <ol>${defs}</ol>`
-        showDict()
-      }).catch(handleError)
+    const tabs = getTabsHeaderHtml(wordsData)
+    const header  = `<b>${word} <span class="dict_word_pronunciation"></span></b>&nbsp;&nbsp;<button class="sound"> &nbsp; </button>`
+    dict.innerHTML = `${header} ${tabs}`
+    renderSound()
+    // can be definition, abbreviation, etc
+    const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0] 
+    renderTabBody(wordsData, 0, curPartOfSpeech, 0)
+
+    // event listener for tabs
+    let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
+    for (let i = 0; i < tabEls.length; i++) {
+      tabEls[i].addEventListener('click', () => { 
+        const tab = tabEls[i]
+        const wordIndex = tab.getAttribute('data-word-index')
+        const curPartOfSpeech = tab.getAttribute('data-part-of-speech')
+        const partOfSpeechIndex = parseInt(tab.getAttribute('data-part-of-speech-index'), 10)
+
+        renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
+      }, false)
+    }
+
+    showDict()
   }
 
   for (let i = 0; i < elements.length; i++) {
@@ -483,7 +567,6 @@ document.addEventListener("DOMContentLoaded", async function(event) {
   renderText()
   renderTranslation()
   renderRemember()
-  renderSound()
   renderUpload()
   renderBookshelf()
   handleRoutingChange()
