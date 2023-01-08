@@ -111,12 +111,12 @@ def process(html, words)
         end
         part_of_speech = part_of_speech.is_a?(String) ? part_of_speech : clean_heading(part_of_speech)
 
-        if part_of_speech == 'derivatives' 
+        if part_of_speech == 'derivatives'
             # TODO: handle derivatives if lemmatizer would be not enough
             next
         end
 
-        if part_of_speech == 'symbol' 
+        if part_of_speech == 'symbol'
             # dont handle symbols
             next
         end
@@ -177,9 +177,9 @@ end
             raise e
         end
     end
-    File.open("words#{i}.js", 'w') { |file| file.write("export default #{words.to_json}") }
+    File.open("words#{i}.js", 'w') { |file| file.write("window['wordsDict#{i}'] = #{words.to_json}") }
     # File.open("words#{i}.js", 'w') { |file| file.write("export default #{JSON.pretty_generate(words)}") }
-    
+
     puts "File written words#{i}.js"
 end
 

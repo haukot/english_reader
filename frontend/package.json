@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && parcel build index.html",
-    "start": "yarn run parcel serve -p 8888 index.html"
+    "build": "rm -rf dist && parcel build index.html && yarn run postbuild",
+    "postbuild": "cp -r static/* dist/",
+    "start": "yarn run postbuild && yarn run parcel serve -p 8888 index.html"
   },
   "devDependencies": {
     "parcel": "^2.8.2",

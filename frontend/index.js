@@ -5,33 +5,18 @@ import { setCORS } from "google-translate-api-browser"
 const backendHost = location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin
 
 let wordsDict = {}
-const wordsDictCallback = function (wordsObj) {
-  for (let key in wordsObj.default) {
-    wordsDict[key] = wordsObj.default[key];
-  }
-}
 
-// TODO: it's not working in array, because parcel relies on static parsing of files
-// Maybe move to static files?
-import('./words_dict/words1.js').then(wordsDictCallback)
-import('./words_dict/words2.js').then(wordsDictCallback)
-import('./words_dict/words3.js').then(wordsDictCallback)
-import('./words_dict/words4.js').then(wordsDictCallback)
-import('./words_dict/words5.js').then(wordsDictCallback)
-import('./words_dict/words6.js').then(wordsDictCallback)
-import('./words_dict/words7.js').then(wordsDictCallback)
-import('./words_dict/words8.js').then(wordsDictCallback)
-import('./words_dict/words9.js').then(wordsDictCallback)
-import('./words_dict/words10.js').then(wordsDictCallback)
-import('./words_dict/words11.js').then(wordsDictCallback)
-import('./words_dict/words12.js').then(wordsDictCallback)
-import('./words_dict/words13.js').then(wordsDictCallback)
-import('./words_dict/words14.js').then(wordsDictCallback)
-import('./words_dict/words15.js').then(wordsDictCallback)
-import('./words_dict/words16.js').then(wordsDictCallback)
-import('./words_dict/words17.js').then(wordsDictCallback)
-import('./words_dict/words18.js').then(wordsDictCallback)
-import('./words_dict/words19.js').then(wordsDictCallback)
+
+window.addEventListener('load', function() {
+  const scripts = document.querySelectorAll('.words_dict_data')
+  for (let i = 0; i < scripts.length; i++) {
+    wordsObj = window[`wordsDict${i + 1}`]
+    for (let key in wordsObj) {
+      wordsDict[key] = wordsObj[key];
+    }
+    delete window[`wordsDict${i + 1}`]
+  }
+})
 
 
 // setting up cors-anywhere server address
@@ -239,7 +224,6 @@ function renderTabBody (wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex
   tabEl.classList.add('active')
 
   const wordData = wordsData[wordIndex]
-  // TODO partofspeech notes?
   // TODO: move <p> of origin to parser script(convert_epub_to_json.rb)?
   let description = curPartOfSpeech === 'origin'
     ? `<p>${wordData.origin}</p>`
