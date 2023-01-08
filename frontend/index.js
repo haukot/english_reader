@@ -247,8 +247,10 @@ function renderTabBody (wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex
   const tabBody = document.querySelector('.dict_tabs-body')
   tabBody.innerHTML = description
 
-  const tabPronunciation = document.querySelector('.dict_word_pronunciation')
-  tabPronunciation.innerHTML = wordData.pronunciation
+  if (wordData.pronunciation) {
+    const tabPronunciation = document.querySelector('.dict_word_pronunciation')
+    tabPronunciation.innerHTML = wordData.pronunciation
+  }
 
   const tabName = document.querySelector('.dict_word_name')
   tabName.innerHTML = wordData.word
