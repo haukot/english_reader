@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && parcel build index.html && yarn run postbuild",
+    "build": "rm -rf dist && yarn run parcel build --no-optimize index.html && yarn run postbuild",
     "postbuild": "mkdir -p dist/ && cp -r static dist/",
     "start": "yarn run postbuild && yarn run parcel serve -p 8888 index.html"
   },
