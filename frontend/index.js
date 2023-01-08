@@ -323,9 +323,10 @@ function renderText() {
     renderSound()
     // can be definition, abbreviation, etc
     const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0]
-    const wordIndex = wordsData.findIndex((wordData) => {
+    let wordIndex = wordsData.findIndex((wordData) => {
       return Object.keys(wordData.description).includes(curPartOfSpeech)
     })
+    if (wordIndex === -1) wordIndex = 0
     renderTabBody(wordsData, wordIndex, curPartOfSpeech, 0)
 
     // event listener for tabs
