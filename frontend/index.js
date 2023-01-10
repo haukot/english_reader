@@ -314,7 +314,7 @@ function renderText() {
     curWordEl.classList.add('active')
     curSentenceEl.classList.add('active')
 
-    let word = this.innerHTML
+    let word = this.innerHTML.toLocaleLowerCase('en')
 
     let attribute = this.getAttribute("t")
     const wordsData = lookup(attribute, word)
