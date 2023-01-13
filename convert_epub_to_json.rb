@@ -112,8 +112,16 @@ def process(html, words)
         part_of_speech = part_of_speech.is_a?(String) ? part_of_speech : clean_heading(part_of_speech)
 
         if part_of_speech == 'derivatives'
-            # TODO: handle derivatives if lemmatizer would be not enough
-            next
+          # TODO: там рядом есть ещё произношение и часть речи, но надо структуру ссылок
+          # менять в итоговом хеше
+          derivatives = description_part_div.xpath(".//div//b")
+          # raise "#{description_part_div.to_html}\n#{derivatives.inspect}"
+          # derivatives добавляем как ссылки на исходное слово
+          derivatives.each do |derivative|
+            words[clean_heading(derivative)] ||= []
+            words[clean_heading(derivative)].push(word)
+          end
+          next
         end
 
         if part_of_speech == 'symbol'
@@ -178,7 +186,8 @@ end
         end
     end
     File.open("words#{i}.js", 'w') { |file| file.write("window['wordsDict#{i}'] = #{words.to_json}") }
-    # File.open("words#{i}.js", 'w') { |file| file.write("export default #{JSON.pretty_generate(words)}") }
+    ## Этот вариант тяжелее по весу, но с ним редактор не тормозит
+    # File.open("words#{i}.js", 'w') { |file| file.write("window['wordsDict#{i}'] = #{JSON.pretty_generate(words)}") }
 
     puts "File written words#{i}.js"
 end
