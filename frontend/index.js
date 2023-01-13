@@ -30,7 +30,7 @@ const defaultBook = {
   id: 'default_book.txt.000kinda000sha000',
   pages: [[0, 812]],
   name: "Default book",
-  text: "Default Book. \n <span class=\"sentence\">The Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\n\n</span><span class=\"sentence\"></span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n<span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.I'm <span t=\"v\">living</span>\n\nL. Sprague De Camp\n</span>",
+  text: "Default Book. \n <span class=\"sentence\">The Eye of the World is the <span t=\"j\">best</span> of its <span t=\"n\">genre</span>.\n\n</span><span class=\"sentence\"></span><span class=\"sentence\">The Ottawa Citizen\n\n\n\n<span t=\"j\">splendid</span> <span t=\"n\">tale</span> of <span t=\"j\">heroic</span> <span t=\"n\">fantasy</span>, <span t=\"j\">vast</span> in <span t=\"n\">scope</span>, <span t=\"j\">colorful</span> in <span t=\"n\">detail</span>, and <span t=\"j\">convincing</span> in its <span t=\"n\">presentation</span> of <span t=\"j\">human</span> <span t=\"n\">character</span> and <span t=\"n\">personality</span>.I'm <span t=\"v\">living</span>. <span t=\"v\">gilded</span>. <span t=\"j\">wryly</span>. <span t=\"n\">stung</span>.\n\nL. Sprague De Camp\n</span>",
   currentPage: 1
 }
 let currentBook = defaultBook
@@ -176,10 +176,17 @@ function lookup(attr, word) {
   if (wordsData && lemmatizedWordData && lemmatized !== word) {
     res = wordsData.concat(lemmatizedWordData)
   }
-  // string if it another variant of word, or(maybe in future?) deriviative
-  if (res && typeof res === 'string') {
-    wordsDict[res]
+  if(!res) return res // если не нашлось совсем
+
+  for (let i = 0; i < res.length; i++) {
+    const wordData = res[i]
+    // string if it another variant of word, or(maybe in future?) deriviative
+    if (wordData && typeof wordData === 'string' && wordsDict[wordData]) {
+      res[i] = null
+      res = res.concat(wordsDict[wordData])
+    }
   }
+  res = res.filter(w => w) // удаляем null после замены string на wordData
   return res
 }
 
@@ -283,6 +290,65 @@ function getTabsHeaderHtml(wordsData) {
   return tabs
 }
 
+function onWordClick() {
+  let dict = document.querySelector('.dictionary')
+
+  clearDict()
+
+  curWordEl = this
+  const newSentenceEl = this.closest('.sentence')
+  if (curSentenceEl !== newSentenceEl) {
+    // прячем перевод, если другое предложение выделили.
+    const translationEl = document.querySelector('.translation')
+    translationEl.innerHTML = ''
+    requestTranslation(newSentenceEl.innerText)
+    hide(translationEl)
+  }
+
+  curSentenceEl = newSentenceEl
+  curWordEl.classList.add('active')
+  curSentenceEl.classList.add('active')
+
+  let word = this.innerHTML.toLocaleLowerCase('en')
+
+  let attribute = this.getAttribute("t")
+  const wordsData = lookup(attribute, word)
+
+  const tabs = getTabsHeaderHtml(wordsData)
+  const header  = `<b><span class="dict_word_name">${word}</span> <span class="dict_word_pronunciation"></span></b>&nbsp;&nbsp;<button class="sound"> &nbsp; </button>`
+  dict.innerHTML = `${header} ${tabs}`
+  renderSound()
+
+  // иногда слово не находится и рендерить нечего. e.g. sharpshooting
+  if (wordsData) {
+    // can be definition, abbreviation, etc
+    let curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0]
+    let wordIndex = wordsData.findIndex((wordData) => {
+      return Object.keys(wordData.description).includes(curPartOfSpeech)
+    })
+    if (wordIndex === -1) {
+      wordIndex = 0
+      curPartOfSpeech = Object.keys(wordsData[0].description)[0]
+    }
+    renderTabBody(wordsData, wordIndex, curPartOfSpeech, 0)
+
+    // event listener for tabs
+    let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
+    for (let i = 0; i < tabEls.length; i++) {
+      tabEls[i].addEventListener('click', () => {
+        const tab = tabEls[i]
+        const wordIndex = tab.getAttribute('data-word-index')
+        const curPartOfSpeech = tab.getAttribute('data-part-of-speech')
+        const partOfSpeechIndex = parseInt(tab.getAttribute('data-part-of-speech-index'), 10)
+
+        renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
+      }, false)
+    }
+  }
+
+  showDict()
+}
+
 function renderText() {
   const textEl = document.querySelector('.text')
   const book = currentBook
@@ -295,67 +361,13 @@ function renderText() {
 
   // process spans
   let elements = document.querySelectorAll('.text span:not(.sentence)')
-  let dict = document.querySelector('.dictionary')
   let rememberBtn = document.querySelector('button.remember')
-
-  let myFunction = function() {
-    clearDict()
-
-    curWordEl = this
-    const newSentenceEl = this.closest('.sentence')
-    if (curSentenceEl !== newSentenceEl) {
-      // прячем перевод, если другое предложение выделили.
-      const translationEl = document.querySelector('.translation')
-      translationEl.innerHTML = ''
-      hide(translationEl)
-    }
-
-    curSentenceEl = newSentenceEl
-    curWordEl.classList.add('active')
-    curSentenceEl.classList.add('active')
-
-    let word = this.innerHTML.toLocaleLowerCase('en')
-
-    let attribute = this.getAttribute("t")
-    const wordsData = lookup(attribute, word)
-
-    const tabs = getTabsHeaderHtml(wordsData)
-    const header  = `<b><span class="dict_word_name">${word}</span> <span class="dict_word_pronunciation"></span></b>&nbsp;&nbsp;<button class="sound"> &nbsp; </button>`
-    dict.innerHTML = `${header} ${tabs}`
-    renderSound()
-
-    // иногда слово не находится и рендерить нечего. e.g. sharpshooting
-    if (wordsData) {
-      // can be definition, abbreviation, etc
-      const curPartOfSpeech = partOfSpeech(attribute) || Object.keys(wordsData[0].description)[0]
-      let wordIndex = wordsData.findIndex((wordData) => {
-        return Object.keys(wordData.description).includes(curPartOfSpeech)
-      })
-      if (wordIndex === -1) wordIndex = 0
-      renderTabBody(wordsData, wordIndex, curPartOfSpeech, 0)
-
-      // event listener for tabs
-      let tabEls = document.querySelectorAll('.dict_tabs-header .tab')
-      for (let i = 0; i < tabEls.length; i++) {
-        tabEls[i].addEventListener('click', () => {
-          const tab = tabEls[i]
-          const wordIndex = tab.getAttribute('data-word-index')
-          const curPartOfSpeech = tab.getAttribute('data-part-of-speech')
-          const partOfSpeechIndex = parseInt(tab.getAttribute('data-part-of-speech-index'), 10)
-
-          renderTabBody(wordsData, wordIndex, curPartOfSpeech, partOfSpeechIndex)
-        }, false)
-      }
-    }
-
-    showDict()
-  }
 
   for (let i = 0; i < elements.length; i++) {
     if (state.words[elements[i].innerHTML]) {
       elements[i].classList.add('remembered')
     }
-    elements[i].addEventListener('click', myFunction, false)
+    elements[i].addEventListener('click', onWordClick, false)
   }
 
   // to drop selection
@@ -366,19 +378,24 @@ function renderText() {
   })
 }
 
+function requestTranslation(text) {
+  let el = document.querySelector('.translation')
+
+  translate(text, { from: "en", to: "ru" })
+    .then(res => {
+      el.innerHTML = res.text
+    })
+    .catch(handleError)
+}
+
 function renderTranslation() {
   let btn = document.querySelector('button.translate')
   let el = document.querySelector('.translation')
 
   let myFunction = function() {
-    btn.classList.add('-process')
-    translate(curSentenceEl.innerText, { from: "en", to: "ru" })
-      .then(res => {
-        el.innerHTML = res.text
-        show(el)
-        btn.classList.remove('-process')
-      })
-      .catch(handleError)
+    // btn.classList.add('-process')
+    show(el)
+    // btn.classList.remove('-process')
   }
   btn.addEventListener('click', myFunction, false)
 }
