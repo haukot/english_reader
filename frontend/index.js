@@ -182,11 +182,10 @@ function lookup(attr, word) {
     const wordData = res[i]
     // string if it another variant of word, or(maybe in future?) deriviative
     if (wordData && typeof wordData === 'string' && wordsDict[wordData]) {
-      res[i] = null
       res = res.concat(wordsDict[wordData])
     }
   }
-  res = res.filter(w => w) // удаляем null после замены string на wordData
+  res = res.filter(w => typeof w !== 'string') // удаляем все бывшие ссылки
   return res
 }
 
