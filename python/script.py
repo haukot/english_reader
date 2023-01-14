@@ -39,11 +39,10 @@ def process_book(book):
                 idx = sent_offset + token.idx
                 end_idx = sent_offset + token.idx + len(token.text)
                 # print(token.text, token.idx, idx, end_idx, offset, sent_idx, text)
-                if (tag != 'x'):
-                    text = text[:idx] + '<span t="' + tag + '">' + text[idx:end_idx] + '</span>' + text[end_idx:]
 
-                    sent_offset = sent_offset + 19 # added span tag length
-                    offset = offset + 19
+                text = text[:idx] + '<span t="' + tag + '">' + text[idx:end_idx] + '</span>' + text[end_idx:]
+                sent_offset = sent_offset + 19 # added span tag length
+                offset = offset + 19
 
             part = part[:sent_idx] + '<span class="sentence">' + text + '</span>' + part[sent_end_idx:]
             offset = offset + 30 # added span tag length
